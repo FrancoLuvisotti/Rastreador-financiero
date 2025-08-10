@@ -1,159 +1,162 @@
 :root {
-      --verde: #4caf50;
-        --rojo: #f44336;
-          --gris-claro: #f5f5f5;
-            --gris-medio: #ccc;
-              --gris-oscuro: #555;
-                --azul: #2196f3;
-                }
-                body {
-                  font-family: Arial, sans-serif;
-                    margin: 0; padding: 0;
-                      background: var(--gris-claro);
-                        color: #333;
-                          min-height: 100vh;
-                            display: flex;
-                              flex-direction: column;
-                              }
-                              header {
-                                background: var(--azul);
-                                  color: white;
-                                    padding: 1rem;
-                                      text-align: center;
-                                      }
-                                      main {
-                                        flex: 1;
-                                          max-width: 900px;
-                                            margin: 1rem auto;
-                                              background: white;
-                                                padding: 1rem 1.5rem 2rem;
-                                                  border-radius: 8px;
-                                                    box-shadow: 0 0 12px rgba(0,0,0,0.1);
-                                                    }
-                                                    form {
-                                                      display: grid;
-                                                        grid-template-columns: 1fr 1fr 1fr 1fr auto;
-                                                          gap: 0.75rem;
-                                                            margin-bottom: 1rem;
-                                                            }
-                                                            label {
-                                                              font-size: 0.9rem;
-                                                              }
-                                                              input, select {
-                                                                width: 100%;
-                                                                  padding: 0.35rem 0.5rem;
-                                                                    font-size: 1rem;
-                                                                      border: 1.5px solid var(--gris-medio);
-                                                                        border-radius: 4px;
-                                                                          box-sizing: border-box;
-                                                                          }
-                                                                          input[type="date"] {
-                                                                            padding-left: 0.6rem;
-                                                                            }
-                                                                            input[type="number"] {
-                                                                              -moz-appearance:textfield;
-                                                                              }
-                                                                              input::-webkit-outer-spin-button,
-                                                                              input::-webkit-inner-spin-button {
-                                                                                -webkit-appearance:none;
-                                                                                  margin:0;
-                                                                                  }
-                                                                                  button {
-                                                                                    background: var(--azul);
-                                                                                      color: white;
-                                                                                        border: none;
-                                                                                          border-radius: 4px;
-                                                                                            cursor: pointer;
-                                                                                              padding: 0 1rem;
-                                                                                                font-weight: 600;
-                                                                                                  transition: background 0.3s;
-                                                                                                  }
-                                                                                                  button:hover {
-                                                                                                    background: #1976d2;
-                                                                                                    }
-                                                                                                    .flex-center {
-                                                                                                      display: flex;
-                                                                                                        justify-content: center;
-                                                                                                          align-items: center;
-                                                                                                          }
-                                                                                                          .section-title {
-                                                                                                            font-weight: 700;
-                                                                                                              margin-top: 2rem;
-                                                                                                                margin-bottom: 0.5rem;
-                                                                                                                  border-bottom: 2px solid var(--azul);
-                                                                                                                    padding-bottom: 0.3rem;
-                                                                                                                    }
-                                                                                                                    table {
-                                                                                                                      width: 100%;
-                                                                                                                        border-collapse: collapse;
-                                                                                                                          margin-top: 0.5rem;
-                                                                                                                          }
-                                                                                                                          th, td {
-                                                                                                                            text-align: left;
-                                                                                                                              padding: 0.45rem 0.75rem;
-                                                                                                                                border-bottom: 1px solid var(--gris-medio);
-                                                                                                                                  font-size: 0.9rem;
-                                                                                                                                  }
-                                                                                                                                  th {
-                                                                                                                                    background: var(--gris-claro);
-                                                                                                                                    }
-                                                                                                                                    .status {
-                                                                                                                                      font-weight: 700;
-                                                                                                                                        padding: 0.3rem 0.5rem;
-                                                                                                                                          border-radius: 4px;
-                                                                                                                                            display: inline-block;
-                                                                                                                                            }
-                                                                                                                                            .status.positivo {
-                                                                                                                                              background: var(--verde);
-                                                                                                                                                color: white;
-                                                                                                                                                }
-                                                                                                                                                .status.negativo {
-                                                                                                                                                  background: var(--rojo);
-                                                                                                                                                    color: white;
-                                                                                                                                                    }
-                                                                                                                                                    @media (max-width: 640px) {
-                                                                                                                                                      form {
-                                                                                                                                                          grid-template-columns: 1fr 1fr;
-                                                                                                                                                            }
-                                                                                                                                                              form > *:last-child {
-                                                                                                                                                                  grid-column: span 2;
-                                                                                                                                                                      justify-self: center;
-                                                                                                                                                                        }
-                                                                                                                                                                          table, thead, tbody, th, td, tr {
-                                                                                                                                                                              display: block;
-                                                                                                                                                                                  width: 100%;
-                                                                                                                                                                                    }
-                                                                                                                                                                                      tr {
-                                                                                                                                                                                          margin-bottom: 1rem;
-                                                                                                                                                                                              border-bottom: 2px solid var(--gris-medio);
-                                                                                                                                                                                                }
-                                                                                                                                                                                                  th {
-                                                                                                                                                                                                      display: none;
-                                                                                                                                                                                                        }
-                                                                                                                                                                                                          td {
-                                                                                                                                                                                                              padding-left: 50%;
-                                                                                                                                                                                                                  position: relative;
-                                                                                                                                                                                                                    }
-                                                                                                                                                                                                                      td::before {
-                                                                                                                                                                                                                          content: attr(data-label);
-                                                                                                                                                                                                                              position: absolute;
-                                                                                                                                                                                                                                  left: 10px;
-                                                                                                                                                                                                                                      top: 0;
-                                                                                                                                                                                                                                          font-weight: 600;
-                                                                                                                                                                                                                                              white-space: nowrap;
-                                                                                                                                                                                                                                                }
-                                                                                                                                                                                                                                                }
-                                                                                                                                                                                                                                                .input-inline {
-                                                                                                                                                                                                                                                  max-width: 150px;
-                                                                                                                                                                                                                                                  }
-                                                                                                                                                                                                                                                  .alert-text {
-                                                                                                                                                                                                                                                    font-weight: 600;
-                                                                                                                                                                                                                                                      margin-top: 0.25rem;
-                                                                                                                                                                                                                                                      }
-                                                                                                                                                                                                                                                      footer {
-                                                                                                                                                                                                                                                        text-align: center;
-                                                                                                                                                                                                                                                          font-size: 0.85rem;
-                                                                                                                                                                                                                                                            color: var(--gris-medio);
-                                                                                                                                                                                                                                                              padding: 1rem;
-                                                                                                                                                                                                                                                              }
+  --verde: #4caf50;
+  --rojo: #f44336;
+  --gris-claro: #f5f5f5;
+  --gris-medio: #ccc;
+  --gris-oscuro: #555;
+  --azul: #2196f3;
+}
+body {
+  font-family: Arial, sans-serif;
+  margin: 0; padding: 0;
+  background: var(--gris-claro);
+  color: #333;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+header {
+  background: var(--azul);
+  color: white;
+  padding: 1rem;
+  text-align: center;
+}
+main {
+  flex: 1;
+  max-width: 900px;
+  margin: 1rem auto;
+  background: white;
+  padding: 1rem 1.5rem 2rem;
+  border-radius: 8px;
+  box-shadow: 0 0 12px rgba(0,0,0,0.1);
+}
+form {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr auto;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+label {
+  font-size: 0.9rem;
+}
+input, select {
+  width: 100%;
+  padding: 0.35rem 0.5rem;
+  font-size: 1rem;
+  border: 1.5px solid var(--gris-medio);
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+input[type="date"] {
+  padding-left: 0.6rem;
+}
+input[type="number"] {
+  -moz-appearance:textfield;
+}
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance:none;
+  margin:0;
+}
+button {
+  background: var(--azul);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  padding: 0 1rem;
+  font-weight: 600;
+  transition: background 0.3s;
+}
+button:hover {
+  background: #1976d2;
+}
+.flex-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.section-title {
+  font-weight: 700;
+  margin-top: 2rem;
+  margin-bottom: 0.5rem;
+  border-bottom: 2px solid var(--azul);
+  padding-bottom: 0.3rem;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 0.5rem;
+}
+th, td {
+  text-align: left;
+  padding: 0.45rem 0.75rem;
+  border-bottom: 1px solid var(--gris-medio);
+  font-size: 0.9rem;
+}
+th {
+  background: var(--gris-claro);
+}
+.status {
+  font-weight: 700;
+  padding: 0.3rem 0.5rem;
+  border-radius: 4px;
+  display: inline-block;
+}
+.status.positivo {
+  background: var(--verde);
+  color: white;
+}
+.status.negativo {
+  background: var(--rojo);
+  color: white;
+}
+@media (max-width: 640px) {
+  form {
+    grid-template-columns: 1fr 1fr;
+  }
+  form > *:last-child {
+    grid-column: span 2;
+    justify-self: center;
+  }
+  table, thead, tbody, th, td, tr {
+    display: block;
+    width: 100%;
+  }
+  tr {
+    margin-bottom: 1rem;
+    border-bottom: 2px solid var(--gris-medio);
+  }
+  th {
+    display: none;
+  }
+  td {
+    padding-left: 50%;
+    position: relative;
+  }
+  td::before {
+    content: attr(data-label);
+    position: absolute;
+    left: 10px;
+    top: 0;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+}
+.input-inline {
+  max-width: 150px;
+}
+.alert-text {
+  font-weight: 600;
+  margin-top: 0.25rem;
+}
+footer {
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--gris-medio);
+  padding: 1rem;
+}
+#errorAsignacion {
+  font-weight: 700;
+  margin-top: 0.2rem;
 }

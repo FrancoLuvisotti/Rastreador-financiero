@@ -10,100 +10,118 @@
 
 <header>
   <h1>Rastreador Financiero Personal</h1>
-  </header>
+</header>
 
-  <main>
-    <section aria-label="Configuración ingreso mensual">
-        <h2 class="section-title">Configurar ingreso mensual</h2>
-            <div class="flex-center" style="gap:1rem; flex-wrap: wrap;">
-                  <label for="inputIngresoMensual">Ingreso mensual ($):</label>
-                        <input type="number" id="inputIngresoMensual" min="0" step="0.01" value="100000" class="input-inline" />
-                              <button id="btnGuardarIngreso">Guardar</button>
-                                  </div>
-                                      <small>Presupuesto semanal se calcula automáticamente según regla 50/30/20</small>
-                                        </section>
+<main>
+  <section aria-label="Configuración ingreso mensual">
+    <h2 class="section-title">Configurar ingreso mensual</h2>
+    <div class="flex-center" style="gap:1rem; flex-wrap: wrap; align-items:center;">
+      <label for="inputIngresoMensual">Ingreso mensual ($):</label>
+      <input type="number" id="inputIngresoMensual" min="0" step="0.01" value="100000" class="input-inline" />
+      <button id="btnGuardarIngreso">Guardar</button>
+    </div>
 
-                                          <section aria-label="Agregar ingreso o gasto">
-                                              <h2 class="section-title">Registrar ingreso/gasto diario</h2>
-                                                  <form id="formMovimiento">
-                                                        <div>
-                                                                <label for="inputFecha">Fecha:</label>
-                                                                        <input type="date" id="inputFecha" required />
-                                                                              </div>
-                                                                                    <div>
-                                                                                            <label for="selectCategoria">Categoría:</label>
-                                                                                                    <select id="selectCategoria" required>
-                                                                                                              <option value="">Seleccione</option>
-                                                                                                                        <option value="Necesidad">Necesidad</option>
-                                                                                                                                  <option value="Deseo">Deseo</option>
-                                                                                                                                            <option value="Ahorro">Ahorro</option>
-                                                                                                                                                    </select>
-                                                                                                                                                          </div>
-                                                                                                                                                                <div>
-                                                                                                                                                                        <label for="inputSubcategoria">Subcategoría:</label>
-                                                                                                                                                                                <input type="text" id="inputSubcategoria" placeholder="Ej: Comida, Ropa, etc." required />
-                                                                                                                                                                                      </div>
-                                                                                                                                                                                            <div>
-                                                                                                                                                                                                    <label for="inputMonto">Monto ($):</label>
-                                                                                                                                                                                                            <input type="number" id="inputMonto" min="0.01" step="0.01" required />
-                                                                                                                                                                                                                  </div>
-                                                                                                                                                                                                                        <div class="flex-center" style="align-self: end;">
-                                                                                                                                                                                                                                <button type="submit">Agregar</button>
-                                                                                                                                                                                                                                      </div>
-                                                                                                                                                                                                                                          </form>
-                                                                                                                                                                                                                                            </section>
+    <div id="asignacionCategorias" style="margin-top:1rem; display:flex; gap:1rem; flex-wrap:wrap;">
+      <div>
+        <label for="inputAsignacionNecesidad">Asignación Necesidad ($):</label><br />
+        <input type="number" id="inputAsignacionNecesidad" min="0" step="0.01" />
+      </div>
+      <div>
+        <label for="inputAsignacionDeseo">Asignación Deseo ($):</label><br />
+        <input type="number" id="inputAsignacionDeseo" min="0" step="0.01" />
+      </div>
+      <div>
+        <label for="inputAsignacionAhorro">Asignación Ahorro ($):</label><br />
+        <input type="number" id="inputAsignacionAhorro" min="0" step="0.01" />
+      </div>
+    </div>
+    <small style="display:block; margin-top:0.25rem; color:#555;">
+      Sugerencia 50/30/20. Total asignado: <span id="totalAsignado">0</span> / Ingreso mensual
+    </small>
+    <small id="errorAsignacion" style="color:#f44336; font-weight:bold; display:none;"></small>
+  </section>
 
-                                                                                                                                                                                                                                              <section aria-label="Movimientos registrados">
-                                                                                                                                                                                                                                                  <h2 class="section-title">Movimientos registrados</h2>
-                                                                                                                                                                                                                                                      <table id="tablaMovimientos" aria-live="polite" aria-describedby="movimientosTotales">
-                                                                                                                                                                                                                                                            <thead>
-                                                                                                                                                                                                                                                                    <tr>
-                                                                                                                                                                                                                                                                              <th>Fecha</th>
-                                                                                                                                                                                                                                                                                        <th>Semana</th>
-                                                                                                                                                                                                                                                                                                  <th>Categoría</th>
-                                                                                                                                                                                                                                                                                                            <th>Subcategoría</th>
-                                                                                                                                                                                                                                                                                                                      <th>Monto ($)</th>
-                                                                                                                                                                                                                                                                                                                              </tr>
-                                                                                                                                                                                                                                                                                                                                    </thead>
-                                                                                                                                                                                                                                                                                                                                          <tbody>
-                                                                                                                                                                                                                                                                                                                                                  <!-- Movimientos aquí -->
-                                                                                                                                                                                                                                                                                                                                                        </tbody>
-                                                                                                                                                                                                                                                                                                                                                            </table>
-                                                                                                                                                                                                                                                                                                                                                                <div id="movimientosTotales" style="margin-top:0.3rem; font-size:0.9rem;"></div>
-                                                                                                                                                                                                                                                                                                                                                                  </section>
+  <section aria-label="Agregar ingreso o gasto">
+    <h2 class="section-title">Registrar ingreso/gasto diario</h2>
+    <form id="formMovimiento">
+      <div>
+        <label for="inputFecha">Fecha:</label>
+        <input type="date" id="inputFecha" required />
+      </div>
+      <div>
+        <label for="selectCategoria">Categoría:</label>
+        <select id="selectCategoria" required>
+          <option value="">Seleccione</option>
+          <option value="Necesidad">Necesidad</option>
+          <option value="Deseo">Deseo</option>
+          <option value="Ahorro">Ahorro</option>
+        </select>
+      </div>
+      <div>
+        <label for="inputSubcategoria">Subcategoría:</label>
+        <input type="text" id="inputSubcategoria" placeholder="Ej: Comida, Ropa, etc." required />
+      </div>
+      <div>
+        <label for="inputMonto">Monto ($):</label>
+        <input type="number" id="inputMonto" min="0.01" step="0.01" required />
+      </div>
+      <div class="flex-center" style="align-self: end;">
+        <button type="submit">Agregar</button>
+      </div>
+    </form>
+  </section>
 
-                                                                                                                                                                                                                                                                                                                                                                    <section aria-label="Saldo semanal y mensual">
-                                                                                                                                                                                                                                                                                                                                                                        <h2 class="section-title">Saldo restante por categoría</h2>
-                                                                                                                                                                                                                                                                                                                                                                            <div id="saldoSemanal" aria-live="polite"></div>
-                                                                                                                                                                                                                                                                                                                                                                                <div id="saldoMensual" aria-live="polite" style="margin-top:1rem;"></div>
-                                                                                                                                                                                                                                                                                                                                                                                  </section>
+  <section aria-label="Movimientos registrados">
+    <h2 class="section-title">Movimientos registrados</h2>
+    <table id="tablaMovimientos" aria-live="polite" aria-describedby="movimientosTotales">
+      <thead>
+        <tr>
+          <th>Fecha</th>
+          <th>Semana</th>
+          <th>Categoría</th>
+          <th>Subcategoría</th>
+          <th>Monto ($)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Movimientos aquí -->
+      </tbody>
+    </table>
+    <div id="movimientosTotales" style="margin-top:0.3rem; font-size:0.9rem;"></div>
+  </section>
 
-                                                                                                                                                                                                                                                                                                                                                                                    <section aria-label="Resumen mensual">
-                                                                                                                                                                                                                                                                                                                                                                                        <h2 class="section-title">Resumen mensual</h2>
-                                                                                                                                                                                                                                                                                                                                                                                            <table id="resumenMensual" aria-live="polite">
-                                                                                                                                                                                                                                                                                                                                                                                                  <thead>
-                                                                                                                                                                                                                                                                                                                                                                                                          <tr>
-                                                                                                                                                                                                                                                                                                                                                                                                                    <th>Categoría</th>
-                                                                                                                                                                                                                                                                                                                                                                                                                              <th>Total gastado ($)</th>
-                                                                                                                                                                                                                                                                                                                                                                                                                                        <th>% respecto presupuesto</th>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                </tr>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                      </thead>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                            <tbody>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <!-- Resumen aquí -->
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                          </tbody>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                              </table>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                </section>
+  <section aria-label="Saldo semanal y mensual">
+    <h2 class="section-title">Saldo restante por categoría</h2>
+    <div id="saldoSemanal" aria-live="polite"></div>
+    <div id="saldoMensual" aria-live="polite" style="margin-top:1rem;"></div>
+  </section>
 
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  <section style="margin-top: 2rem;">
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      <button id="btnResetear" style="background: #f44336; width: 100%;">Resetear / Nuevo mes</button>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        </section>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        </main>
+  <section aria-label="Resumen mensual">
+    <h2 class="section-title">Resumen mensual</h2>
+    <table id="resumenMensual" aria-live="polite">
+      <thead>
+        <tr>
+          <th>Categoría</th>
+          <th>Total gastado ($)</th>
+          <th>% respecto presupuesto</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Resumen aquí -->
+      </tbody>
+    </table>
+  </section>
 
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        <footer>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          &copy; 2025 Rastreador Financiero Personal
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          </footer>
+  <section style="margin-top: 2rem;">
+    <button id="btnResetear" style="background: #f44336; width: 100%;">Resetear / Nuevo mes</button>
+  </section>
+</main>
 
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          <script src="script.js"></script>
+<footer>
+  &copy; 2025 Rastreador Financiero Personal
+</footer>
 
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          </body>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          </html>
+<script src="script.js"></script>
+
+</body>
+</html>

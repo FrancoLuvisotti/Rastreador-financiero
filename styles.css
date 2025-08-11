@@ -5,6 +5,7 @@
   --gris-medio: #ccc;
   --gris-oscuro: #555;
   --azul: #2196f3;
+  --amarillo: #ffb300;
 }
 body {
   font-family: Arial, sans-serif;
@@ -111,6 +112,48 @@ th {
   background: var(--rojo);
   color: white;
 }
+#barraAsignacion {
+  height: 25px;
+  width: 100%;
+  background: var(--gris-medio);
+  border-radius: 12px;
+  overflow: hidden;
+  display: flex;
+}
+.barra-seccion {
+  height: 100%;
+}
+.barra-necesidad {
+  background: var(--verde);
+}
+.barra-deseo {
+  background: var(--amarillo);
+}
+.barra-ahorro {
+  background: var(--azul);
+}
+.alert-text {
+  font-weight: 600;
+  margin-top: 0.25rem;
+  color: var(--rojo);
+}
+.sugerencia {
+  display: block;
+  color: #555;
+  font-size: 0.8rem;
+  margin-top: 0.1rem;
+}
+footer {
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--gris-medio);
+  padding: 1rem;
+}
+#errorAsignacion {
+  font-weight: 700;
+  margin-top: 0.2rem;
+}
+
 @media (max-width: 640px) {
   form {
     grid-template-columns: 1fr 1fr;
@@ -145,24 +188,4 @@ th {
 }
 .input-inline {
   max-width: 150px;
-}
-.alert-text {
-  font-weight: 600;
-  margin-top: 0.25rem;
-}
-.sugerencia {
-  display: block;
-  color: #555;
-  font-size: 0.8rem;
-  margin-top: 0.1rem;
-}
-footer {
-  text-align: center;
-  font-size: 0.85rem;
-  color: var(--gris-medio);
-  padding: 1rem;
-}
-#errorAsignacion {
-  font-weight: 700;
-  margin-top: 0.2rem;
 }

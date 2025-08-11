@@ -150,6 +150,12 @@ th {
   font-weight: 600;
   margin-top: 0.25rem;
 }
+.sugerencia {
+  display: block;
+  color: #555;
+  font-size: 0.8rem;
+  margin-top: 0.1rem;
+}
 footer {
   text-align: center;
   font-size: 0.85rem;

@@ -1,100 +1,172 @@
-(() => {
-  const ingresoInput = document.getElementById('inputIngresoMensual');
-  const btnGuardarIngreso = document.getElementById('btnGuardarIngreso');
-  const formMovimiento = document.getElementById('formMovimiento');
-  const tablaMovimientosBody = document.querySelector('#tablaMovimientos tbody');
-  const movimientosTotales = document.getElementById('movimientosTotales');
-  const saldoSemanalDiv = document.getElementById('saldoSemanal');
-  const saldoMensualDiv = document.getElementById('saldoMensual');
-  const resumenMensualBody = document.querySelector('#resumenMensual tbody');
-  const btnResetear = document.getElementById('btnResetear');
+document.addEventListener("DOMContentLoaded", () => {
+    const ingresoMensualInput = document.getElementById("inputIngresoMensual");
+    const btnGuardarIngreso = document.getElementById("btnGuardarIngreso");
+    const asignacionNecesidadInput = document.getElementById("inputAsignacionNecesidad");
+    const asignacionDeseoInput = document.getElementById("inputAsignacionDeseo");
+    const asignacionAhorroInput = document.getElementById("inputAsignacionAhorro");
+    const sugerenciaNecesidad = document.getElementById("sugerenciaNecesidad");
+    const sugerenciaDeseo = document.getElementById("sugerenciaDeseo");
+    const sugerenciaAhorro = document.getElementById("sugerenciaAhorro");
+    const totalAsignadoSpan = document.getElementById("totalAsignado");
+    const errorAsignacion = document.getElementById("errorAsignacion");
 
-  // Nuevos inputs para asignaciones manuales
-  const inputAsignacionNecesidad = document.getElementById('inputAsignacionNecesidad');
-  const inputAsignacionDeseo = document.getElementById('inputAsignacionDeseo');
-  const inputAsignacionAhorro = document.getElementById('inputAsignacionAhorro');
-  const totalAsignadoSpan = document.getElementById('totalAsignado');
-  const errorAsignacionSpan = document.getElementById('errorAsignacion');
+    const formMovimiento = document.getElementById("formMovimiento");
+    const tablaMovimientosBody = document.querySelector("#tablaMovimientos tbody");
+    const movimientosTotales = document.getElementById("movimientosTotales");
+    const saldoSemanalDiv = document.getElementById("saldoSemanal");
+    const saldoMensualDiv = document.getElementById("saldoMensual");
+    const resumenMensualBody = document.querySelector("#resumenMensual tbody");
+    const btnResetear = document.getElementById("btnResetear");
 
-  const CATEGORIAS = ['Necesidad', 'Deseo', 'Ahorro'];
+    let movimientos = JSON.parse(localStorage.getItem("movimientos")) || [];
+    let ingresoMensual = parseFloat(localStorage.getItem("ingresoMensual")) || 100000;
+    let asignaciones = JSON.parse(localStorage.getItem("asignaciones")) || {
+        Necesidad: ingresoMensual * 0.5,
+        Deseo: ingresoMensual * 0.3,
+        Ahorro: ingresoMensual * 0.2
+    };
 
-  const formatMonto = val => val.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    ingresoMensualInput.value = ingresoMensual;
 
-  function obtenerSemanaDelMes(fecha) {
-    const dia = fecha.getDate();
-    return Math.ceil(dia / 7);
-  }
-
-  function guardarDatos() {
-    localStorage.setItem('ingresoMensual', ingresoMensual.toString());
-    localStorage.setItem('movimientos', JSON.stringify(movimientos));
-    localStorage.setItem('asignacionManual', JSON.stringify(asignacionManual));
-  }
-  function cargarDatos() {
-    const ingresoGuardado = localStorage.getItem('ingresoMensual');
-    ingresoMensual = ingresoGuardado ? parseFloat(ingresoGuardado) : 100000;
-
-    const movGuardados = localStorage.getItem('movimientos');
-    movimientos = movGuardados ? JSON.parse(movGuardados) : [];
-
-    const asignacionGuardada = localStorage.getItem('asignacionManual');
-    asignacionManual = asignacionGuardada
-      ? JSON.parse(asignacionGuardada)
-      : {
-          Necesidad: ingresoMensual * 0.5,
-          Deseo: ingresoMensual * 0.3,
-          Ahorro: ingresoMensual * 0.2,
+    function calcularSugerencias() {
+        const sugerencias = {
+            Necesidad: ingresoMensual * 0.5,
+            Deseo: ingresoMensual * 0.3,
+            Ahorro: ingresoMensual * 0.2
         };
-  }
-
-  let ingresoMensual = 100000;
-  let movimientos = [];
-  // Ahora asignacionManual es objeto editable
-  let asignacionManual = {
-    Necesidad: ingresoMensual * 0.5,
-    Deseo: ingresoMensual * 0.3,
-    Ahorro: ingresoMensual * 0.2,
-  };
-
-  function actualizarIngresoInput() {
-    ingresoInput.value = ingresoMensual.toFixed(2);
-  }
-
-  function actualizarInputsAsignacion() {
-    inputAsignacionNecesidad.value = asignacionManual.Necesidad.toFixed(2);
-    inputAsignacionDeseo.value = asignacionManual.Deseo.toFixed(2);
-    inputAsignacionAhorro.value = asignacionManual.Ahorro.toFixed(2);
-    actualizarTotalAsignado();
-  }
-
-  function actualizarTotalAsignado() {
-    const total = asignacionManual.Necesidad + asignacionManual.Deseo + asignacionManual.Ahorro;
-    totalAsignadoSpan.textContent = formatMonto(total);
-    // Mostrar error si total asignado > ingreso mensual
-    if (total > ingresoMensual) {
-      errorAsignacionSpan.style.display = 'block';
-      errorAsignacionSpan.textContent = 'La suma de asignaciones supera el ingreso mensual. Ajusta los valores.';
-    } else {
-      errorAsignacionSpan.style.display = 'none';
-      errorAsignacionSpan.textContent = '';
+        sugerenciaNecesidad.textContent = `Recomendado: $${sugerencias.Necesidad.toFixed(2)}`;
+        sugerenciaDeseo.textContent = `Recomendado: $${sugerencias.Deseo.toFixed(2)}`;
+        sugerenciaAhorro.textContent = `Recomendado: $${sugerencias.Ahorro.toFixed(2)}`;
+        return sugerencias;
     }
-  }
 
-  function validarAsignacion() {
-    const total = asignacionManual.Necesidad + asignacionManual.Deseo + asignacionManual.Ahorro;
-    return total <= ingresoMensual;
-  }
+    function actualizarTotalAsignado() {
+        const totalAsignado = 
+            parseFloat(asignacionNecesidadInput.value || 0) +
+            parseFloat(asignacionDeseoInput.value || 0) +
+            parseFloat(asignacionAhorroInput.value || 0);
+        totalAsignadoSpan.textContent = totalAsignado.toFixed(2);
 
-  function agregarMovimiento({ fecha, categoria, subcategoria, monto }) {
-    const fechaObj = new Date(fecha + 'T00:00:00');
-    if (isNaN(fechaObj)) return false;
-    if (!CATEGORIAS.includes(categoria)) return false;
-    if (!subcategoria.trim()) return false;
-    if (monto <= 0) return false;
+        if (totalAsignado > ingresoMensual) {
+            errorAsignacion.textContent = "⚠ El total asignado supera el ingreso mensual.";
+            errorAsignacion.style.display = "block";
+        } else {
+            errorAsignacion.style.display = "none";
+        }
+    }
 
-    // Antes de agregar, calculamos saldo actual para saber si supera asignación
-    const saldoActual = calcularSaldoPorCategoria();
-    const saldoRestante = asignacionManual[categoria] - saldoActual[categoria];
+    function guardarAsignaciones() {
+        asignaciones = {
+            Necesidad: parseFloat(asignacionNecesidadInput.value) || 0,
+            Deseo: parseFloat(asignacionDeseoInput.value) || 0,
+            Ahorro: parseFloat(asignacionAhorroInput.value) || 0
+        };
+        localStorage.setItem("asignaciones", JSON.stringify(asignaciones));
+    }
 
-    // Si gasto supera lo que queda en la categoría avisamos en confirmación
-    let mensaje = `¿Confirmás registrar
+    btnGuardarIngreso.addEventListener("click", () => {
+        ingresoMensual = parseFloat(ingresoMensualInput.value) || 0;
+        localStorage.setItem("ingresoMensual", ingresoMensual);
+        const sugerencias = calcularSugerencias();
+
+        // Advertencia si valores distintos
+        [asignacionNecesidadInput, asignacionDeseoInput, asignacionAhorroInput].forEach((input, idx) => {
+            const keys = ["Necesidad", "Deseo", "Ahorro"];
+            if (parseFloat(input.value) !== sugerencias[keys[idx]]) {
+                if (!confirm(`Has puesto un valor diferente al recomendado para ${keys[idx]}. ¿Seguro que quieres continuar?`)) {
+                    input.value = sugerencias[keys[idx]];
+                }
+            }
+        });
+
+        guardarAsignaciones();
+        actualizarTotalAsignado();
+        actualizarResumen();
+    });
+
+    function calcularSemanaDelMes(fecha) {
+        const f = new Date(fecha);
+        const dia = f.getDate();
+        return Math.ceil(dia / 7);
+    }
+
+    function actualizarResumen() {
+        tablaMovimientosBody.innerHTML = "";
+        let totales = { Necesidad: 0, Deseo: 0, Ahorro: 0 };
+        movimientos.forEach(mov => {
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+                <td>${mov.fecha}</td>
+                <td>${mov.semana}</td>
+                <td>${mov.categoria}</td>
+                <td>${mov.subcategoria}</td>
+                <td>${mov.monto.toFixed(2)}</td>
+            `;
+            tablaMovimientosBody.appendChild(tr);
+            totales[mov.categoria] += mov.monto;
+        });
+
+        // Mostrar saldos
+        saldoMensualDiv.innerHTML = Object.keys(asignaciones).map(cat => {
+            const restante = asignaciones[cat] - totales[cat];
+            return `<div style="color:${restante >= 0 ? 'green' : 'red'}">
+                        ${cat}: $${restante.toFixed(2)} restante
+                    </div>`;
+        }).join("");
+
+        // Resumen mensual
+        resumenMensualBody.innerHTML = Object.keys(asignaciones).map(cat => {
+            const porcentaje = asignaciones[cat] > 0 ? (totales[cat] / asignaciones[cat]) * 100 : 0;
+            return `<tr>
+                        <td>${cat}</td>
+                        <td>${totales[cat].toFixed(2)}</td>
+                        <td>${porcentaje.toFixed(1)}%</td>
+                    </tr>`;
+        }).join("");
+    }
+
+    formMovimiento.addEventListener("submit", e => {
+        e.preventDefault();
+        const fecha = document.getElementById("inputFecha").value;
+        const categoria = document.getElementById("selectCategoria").value;
+        const subcategoria = document.getElementById("inputSubcategoria").value;
+        const monto = parseFloat(document.getElementById("inputMonto").value);
+
+        // Verificar saldo antes de registrar
+        const gastado = movimientos.filter(m => m.categoria === categoria).reduce((a, b) => a + b.monto, 0);
+        const saldoDisponible = asignaciones[categoria] - gastado;
+        if (monto > saldoDisponible) {
+            if (!confirm(`Este gasto supera el saldo disponible de ${categoria} ($${saldoDisponible.toFixed(2)}). ¿Quieres registrarlo igualmente?`)) {
+                return;
+            }
+        }
+
+        movimientos.push({
+            fecha,
+            semana: calcularSemanaDelMes(fecha),
+            categoria,
+            subcategoria,
+            monto
+        });
+
+        localStorage.setItem("movimientos", JSON.stringify(movimientos));
+        actualizarResumen();
+        formMovimiento.reset();
+    });
+
+    btnResetear.addEventListener("click", () => {
+        if (confirm("¿Seguro que quieres resetear todo para un nuevo mes?")) {
+            movimientos = [];
+            localStorage.removeItem("movimientos");
+            actualizarResumen();
+        }
+    });
+
+    // Inicializar
+    asignacionNecesidadInput.value = asignaciones.Necesidad;
+    asignacionDeseoInput.value = asignaciones.Deseo;
+    asignacionAhorroInput.value = asignaciones.Ahorro;
+    calcularSugerencias();
+    actualizarTotalAsignado();
+    actualizarResumen();
+});

@@ -290,7 +290,13 @@ document.addEventListener("DOMContentLoaded", () => {
         meses[mes] = totalGastado;
     });
 
-    const labelsTendencia = Object.keys(meses).sort((a, b) => new Date(a.replace(/(\w+)-(\d+)/, '$1 1, $2')) - new Date(b.replace(/(\w+)-(\d+)/, '$1 1, $2')));
+    const labelsTendencia = Object.keys(meses).sort((a, b) => {
+      const [mesA, anioA] = a.split('-');
+      const [mesB, anioB] = b.split('-');
+      const fechaA = new Date(`${mesA} 1, ${anioA}`);
+      const fechaB = new Date(`${mesB} 1, ${anioB}`);
+      return fechaA - fechaB;
+    });
     const dataTendencia = labelsTendencia.map(label => meses[label]);
 
     chartTendencia = new Chart(ctxTendencia, {

@@ -21,20 +21,28 @@
       <button id="btnGuardarIngreso">Guardar</button>
     </div>
 
+    <!-- Bloque modificado -->
     <div id="asignacionCategorias" style="margin-top:1rem; display:flex; gap:1rem; flex-wrap:wrap;">
       <div>
         <label for="inputAsignacionNecesidad">Asignación Necesidad ($):</label><br />
         <input type="number" id="inputAsignacionNecesidad" min="0" step="0.01" />
+        <small id="sugerenciaNecesidad" class="sugerencia"></small>
+        <small id="alertaNecesidad" class="alert-text" style="display:none;"></small>
       </div>
       <div>
         <label for="inputAsignacionDeseo">Asignación Deseo ($):</label><br />
         <input type="number" id="inputAsignacionDeseo" min="0" step="0.01" />
+        <small id="sugerenciaDeseo" class="sugerencia"></small>
+        <small id="alertaDeseo" class="alert-text" style="display:none;"></small>
       </div>
       <div>
         <label for="inputAsignacionAhorro">Asignación Ahorro ($):</label><br />
         <input type="number" id="inputAsignacionAhorro" min="0" step="0.01" />
+        <small id="sugerenciaAhorro" class="sugerencia"></small>
+        <small id="alertaAhorro" class="alert-text" style="display:none;"></small>
       </div>
     </div>
+
     <small style="display:block; margin-top:0.25rem; color:#555;">
       Sugerencia 50/30/20. Total asignado: <span id="totalAsignado">0</span> / Ingreso mensual
     </small>

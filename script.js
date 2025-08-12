@@ -25,9 +25,13 @@ document.addEventListener("DOMContentLoaded", () => {
   const inputSubcategoria = document.getElementById('inputSubcategoria');
   const subcategoriaSugerencias = document.getElementById('subcategoriaSugerencias');
   const historialMesesDiv = document.getElementById('historialMeses');
-  
-  // NUEVO: Menú de selección
   const tipoSeguimientoSelect = document.getElementById('tipoSeguimiento');
+
+  // NUEVO: Elementos DOM para la gestión de subcategorías
+  const btnGestionarSubcategorias = document.getElementById('btnGestionarSubcategorias');
+  const modalSubcategorias = document.getElementById('modalSubcategorias');
+  const listaSubcategorias = document.getElementById('listaSubcategorias');
+  const btnCerrarModal = document.getElementById('btnCerrarModal');
 
   // Variables
   let movimientos = JSON.parse(localStorage.getItem("movimientos")) || [];
@@ -123,7 +127,6 @@ document.addEventListener("DOMContentLoaded", () => {
     return Math.ceil((diaMes + diaSemanaPrimerDia) / 7);
   }
 
-  // MODIFICADO: Adaptar el filtro de tiempo al tipo de seguimiento
   function getFechasFiltro(filtro) {
     const hoy = new Date();
     if (filtro === 'semana') {
@@ -140,7 +143,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function renderMovimientos() {
     const filtroCat = filtroCategoria.value;
-    // MODIFICADO: Usar el tipo de seguimiento actual para el filtro de tiempo
     const filtroT = tipoSeguimiento;
     const { inicio, fin } = getFechasFiltro(filtroT);
 
@@ -180,7 +182,6 @@ document.addEventListener("DOMContentLoaded", () => {
   function actualizarSaldos() {
     saldosDiv.innerHTML = "";
 
-    // MODIFICADO: Ajustar saldos según el tipo de seguimiento
     const { inicio, fin } = getFechasFiltro(tipoSeguimiento);
     const movimientosPeriodoActual = movimientos.filter(m => m.fecha >= inicio && m.fecha <= fin && m.categoria !== 'Ingreso');
     const totalesPeriodo = movimientosPeriodoActual.reduce((acc, mov) => {
@@ -312,6 +313,19 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
   }
+  
+  // NUEVO: Función para actualizar la lista de subcategorías en la modal
+  function renderListaSubcategorias() {
+    listaSubcategorias.innerHTML = '';
+    subcategoriasGuardadas.forEach(sub => {
+      const li = document.createElement('li');
+      li.innerHTML = `
+        <span>${sub}</span>
+        <button class="btn-eliminar-subcategoria" data-subcategoria="${sub}">❌</button>
+      `;
+      listaSubcategorias.appendChild(li);
+    });
+  }
 
   // Event Listeners
   btnGuardarIngreso.addEventListener("click", () => {
@@ -344,8 +358,7 @@ document.addEventListener("DOMContentLoaded", () => {
     actualizarTotalAsignado();
     renderMovimientos();
   });
-
-  // MODIFICADO: Listener para el menú de seguimiento
+  
   tipoSeguimientoSelect.addEventListener('change', () => {
       tipoSeguimiento = tipoSeguimientoSelect.value;
       localStorage.setItem('tipoSeguimiento', tipoSeguimiento);
@@ -379,7 +392,6 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
     
-    // MODIFICADO: Mensaje de confirmación de saldo
     if (categoria !== 'Ingreso') {
       const { inicio, fin } = getFechasFiltro(tipoSeguimiento);
       const gastadoEnPeriodo = movimientos.filter(m => m.categoria === categoria && m.fecha >= inicio && m.fecha <= fin).reduce((acc, cur) => acc + cur.monto, 0);
@@ -466,6 +478,30 @@ document.addEventListener("DOMContentLoaded", () => {
       renderMovimientos();
     }
   }
+  
+  // NUEVO: Listener para el botón de gestionar subcategorías
+  btnGestionarSubcategorias.addEventListener('click', () => {
+    renderListaSubcategorias();
+    modalSubcategorias.showModal();
+  });
+
+  btnCerrarModal.addEventListener('click', () => {
+    modalSubcategorias.close();
+  });
+  
+  // NUEVO: Listener para eliminar subcategorías
+  listaSubcategorias.addEventListener('click', (e) => {
+    if (e.target.classList.contains('btn-eliminar-subcategoria')) {
+      const subcategoria = e.target.getAttribute('data-subcategoria');
+      if (confirm(`¿Estás seguro de que quieres eliminar la subcategoría "${subcategoria}"?`)) {
+        subcategoriasGuardadas = subcategoriasGuardadas.filter(sub => sub !== subcategoria);
+        localStorage.setItem('subcategorias', JSON.stringify(subcategoriasGuardadas));
+        actualizarSugerenciasSubcategorias();
+        renderListaSubcategorias();
+      }
+    }
+  });
+
 
   function actualizarSugerenciasSubcategorias() {
     subcategoriaSugerencias.innerHTML = '';
@@ -549,19 +585,17 @@ document.addEventListener("DOMContentLoaded", () => {
     URL.revokeObjectURL(url);
   });
   
-  // NUEVA FUNCIÓN: Adapta la interfaz al tipo de seguimiento
   function actualizarInterfazSegunSeguimiento() {
     const ingresoLabel = document.querySelector('label[for="inputIngresoSemanal"]');
     ingresoLabel.textContent = tipoSeguimiento === 'semanal' ? 'Ingreso semanal ($):' : 'Ingreso mensual ($):';
     
     if (tipoSeguimiento === 'mensual') {
       filtroTiempo.value = 'mes';
-      filtroTiempo.disabled = true; // Deshabilitar el filtro de tiempo cuando es mensual
+      filtroTiempo.disabled = true;
     } else {
       filtroTiempo.disabled = false;
     }
     
-    // Si el ingreso base actual es un ingreso semanal, lo ajustamos a un valor mensual
     if (tipoSeguimiento === 'mensual' && localStorage.getItem('ingresoBaseSemanal') !== null) {
       ingresoBase = parseFloat(localStorage.getItem('ingresoBaseSemanal')) * 4;
       localStorage.setItem('ingresoBase', ingresoBase);

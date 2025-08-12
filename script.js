@@ -25,14 +25,23 @@ document.addEventListener("DOMContentLoaded", () => {
   const inputSubcategoria = document.getElementById('inputSubcategoria');
   const subcategoriaSugerencias = document.getElementById('subcategoriaSugerencias');
   const historialMesesDiv = document.getElementById('historialMeses');
+  
+  // NUEVO: Menú de selección
+  const tipoSeguimientoSelect = document.getElementById('tipoSeguimiento');
 
   // Variables
   let movimientos = JSON.parse(localStorage.getItem("movimientos")) || [];
-  let ingresoSemanal = parseFloat(localStorage.getItem("ingresoSemanal")) || 25000;
+  let ingresoBase = parseFloat(localStorage.getItem("ingresoBase")) || 25000;
+  let tipoSeguimiento = localStorage.getItem("tipoSeguimiento") || 'semanal';
+
+  // Ajusta el título del ingreso según el tipo de seguimiento
+  const ingresoLabel = document.querySelector('label[for="inputIngresoSemanal"]');
+  ingresoLabel.textContent = tipoSeguimiento === 'semanal' ? 'Ingreso semanal ($):' : 'Ingreso mensual ($):';
+  
   let asignaciones = JSON.parse(localStorage.getItem("asignaciones")) || {
-    Necesidad: ingresoSemanal * 0.5,
-    Deseo: ingresoSemanal * 0.3,
-    Ahorro: ingresoSemanal * 0.2
+    Necesidad: ingresoBase * 0.5,
+    Deseo: ingresoBase * 0.3,
+    Ahorro: ingresoBase * 0.2
   };
   let subcategoriasGuardadas = JSON.parse(localStorage.getItem('subcategorias')) || [];
   let historial = JSON.parse(localStorage.getItem('historial')) || {};
@@ -56,9 +65,9 @@ document.addEventListener("DOMContentLoaded", () => {
   
   function calcularSugerencias() {
     const sugerencias = {
-      Necesidad: ingresoSemanal * 0.5,
-      Deseo: ingresoSemanal * 0.3,
-      Ahorro: ingresoSemanal * 0.2
+      Necesidad: ingresoBase * 0.5,
+      Deseo: ingresoBase * 0.3,
+      Ahorro: ingresoBase * 0.2
     };
     sugerenciaNecesidad.textContent = `Recomendado: ${formatMoney(sugerencias.Necesidad)}`;
     sugerenciaDeseo.textContent = `Recomendado: ${formatMoney(sugerencias.Deseo)}`;
@@ -73,22 +82,22 @@ document.addEventListener("DOMContentLoaded", () => {
       parseFloat(asignacionAhorroInput.value || 0);
     totalAsignadoSpan.textContent = formatMoney(totalAsignado);
 
-    const isTotalValid = Math.abs(totalAsignado - ingresoSemanal) < 0.01;
+    const isTotalValid = Math.abs(totalAsignado - ingresoBase) < 0.01;
     btnGuardarIngreso.disabled = !isTotalValid;
 
-    if (totalAsignado > ingresoSemanal) {
-      errorAsignacion.textContent = "⚠ El total asignado supera el ingreso semanal.";
+    if (totalAsignado > ingresoBase) {
+      errorAsignacion.textContent = `⚠ El total asignado supera el ingreso ${tipoSeguimiento === 'semanal' ? 'semanal' : 'mensual'}.`;
       errorAsignacion.style.display = "block";
-    } else if (totalAsignado < ingresoSemanal) {
-      errorAsignacion.textContent = "⚠ El total asignado es menor que el ingreso semanal.";
+    } else if (totalAsignado < ingresoBase) {
+      errorAsignacion.textContent = `⚠ El total asignado es menor que el ingreso ${tipoSeguimiento === 'semanal' ? 'semanal' : 'mensual'}.`;
       errorAsignacion.style.display = "block";
     } else {
       errorAsignacion.style.display = "none";
     }
 
-    const necesidadPct = (parseFloat(asignacionNecesidadInput.value || 0) / ingresoSemanal) * 100;
-    const deseoPct = (parseFloat(asignacionDeseoInput.value || 0) / ingresoSemanal) * 100;
-    const ahorroPct = (parseFloat(asignacionAhorroInput.value || 0) / ingresoSemanal) * 100;
+    const necesidadPct = (parseFloat(asignacionNecesidadInput.value || 0) / ingresoBase) * 100;
+    const deseoPct = (parseFloat(asignacionDeseoInput.value || 0) / ingresoBase) * 100;
+    const ahorroPct = (parseFloat(asignacionAhorroInput.value || 0) / ingresoBase) * 100;
 
     barraAsignacion.innerHTML = `
       <div class="barra-seccion barra-necesidad" style="width:${necesidadPct}%" title="Necesidad ${necesidadPct.toFixed(1)}%"></div>
@@ -114,6 +123,7 @@ document.addEventListener("DOMContentLoaded", () => {
     return Math.ceil((diaMes + diaSemanaPrimerDia) / 7);
   }
 
+  // MODIFICADO: Adaptar el filtro de tiempo al tipo de seguimiento
   function getFechasFiltro(filtro) {
     const hoy = new Date();
     if (filtro === 'semana') {
@@ -130,7 +140,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function renderMovimientos() {
     const filtroCat = filtroCategoria.value;
-    const filtroT = filtroTiempo.value;
+    // MODIFICADO: Usar el tipo de seguimiento actual para el filtro de tiempo
+    const filtroT = tipoSeguimiento;
     const { inicio, fin } = getFechasFiltro(filtroT);
 
     tablaMovimientosBody.innerHTML = "";
@@ -169,38 +180,24 @@ document.addEventListener("DOMContentLoaded", () => {
   function actualizarSaldos() {
     saldosDiv.innerHTML = "";
 
-    const { inicio, fin } = getFechasFiltro('semana');
-    const movimientosSemanaActual = movimientos.filter(m => m.fecha >= inicio && m.fecha <= fin && m.categoria !== 'Ingreso');
-    const totalesSemana = movimientosSemanaActual.reduce((acc, mov) => {
+    // MODIFICADO: Ajustar saldos según el tipo de seguimiento
+    const { inicio, fin } = getFechasFiltro(tipoSeguimiento);
+    const movimientosPeriodoActual = movimientos.filter(m => m.fecha >= inicio && m.fecha <= fin && m.categoria !== 'Ingreso');
+    const totalesPeriodo = movimientosPeriodoActual.reduce((acc, mov) => {
       acc[mov.categoria] = (acc[mov.categoria] || 0) + mov.monto;
       return acc;
     }, { Necesidad: 0, Deseo: 0, Ahorro: 0 });
 
-    const saldoSemanalHTML = Object.keys(asignaciones).map(cat => {
-      const restante = asignaciones[cat] - (totalesSemana[cat] || 0);
+    const saldoHTML = Object.keys(asignaciones).map(cat => {
+      const restante = asignaciones[cat] - (totalesPeriodo[cat] || 0);
       const color = restante >= 0 ? "var(--verde)" : "var(--rojo)";
       return `<div style="color:${color}; font-weight: 600;">
-        ${cat} (semana): ${formatMoney(restante)} restante
+        ${cat}: ${formatMoney(restante)} restante
       </div>`;
     }).join("");
     
-    saldosDiv.innerHTML += `<h3>Saldo semanal</h3>${saldoSemanalHTML}`;
-    
-    const movimientosMesActual = movimientos.filter(m => m.categoria !== 'Ingreso');
-    const totalesMes = movimientosMesActual.reduce((acc, mov) => {
-      acc[mov.categoria] = (acc[mov.categoria] || 0) + mov.monto;
-      return acc;
-    }, { Necesidad: 0, Deseo: 0, Ahorro: 0 });
-    
-    const saldoMensualHTML = Object.keys(asignaciones).map(cat => {
-      const restante = (asignaciones[cat] * 4) - (totalesMes[cat] || 0);
-      const color = restante >= 0 ? "var(--verde)" : "var(--rojo)";
-      return `<div style="color:${color}; font-weight: 600;">
-        ${cat} (mensual): ${formatMoney(restante)} restante
-      </div>`;
-    }).join("");
-
-    saldosDiv.innerHTML += `<h3 style="margin-top:1rem;">Saldo mensual (aproximado)</h3>${saldoMensualHTML}`;
+    const titulo = tipoSeguimiento === 'semanal' ? 'Saldo semanal' : 'Saldo mensual';
+    saldosDiv.innerHTML = `<h3>${titulo}</h3>${saldoHTML}`;
   }
 
   function actualizarResumen() {
@@ -211,11 +208,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
     resumenMensualBody.innerHTML = Object.keys(asignaciones).map(cat => {
       const totalGastado = totales[cat] || 0;
-      const presupuestoMensual = asignaciones[cat] * 4;
-      const porcentaje = presupuestoMensual > 0 ? (totalGastado / presupuestoMensual) * 100 : 0;
+      const presupuestoTotal = asignaciones[cat];
+      const porcentaje = presupuestoTotal > 0 ? (totalGastado / presupuestoTotal) * 100 : 0;
       return `<tr>
         <td>${cat}</td>
-        <td>${formatMoney(presupuestoMensual)}</td>
+        <td>${formatMoney(presupuestoTotal)}</td>
         <td>${formatMoney(totalGastado)}</td>
         <td>${porcentaje.toFixed(1)}%</td>
       </tr>`;
@@ -223,26 +220,21 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   
   function actualizarGraficos() {
-    const totalesGastos = movimientos.filter(m => m.categoria !== 'Ingreso').reduce((acc, mov) => {
-        acc[mov.categoria] = (acc[mov.categoria] || 0) + mov.monto;
-        return acc;
-    }, { Necesidad: 0, Deseo: 0, Ahorro: 0 });
-
-    const presupuestoSemanal = {
-      Necesidad: asignaciones.Necesidad,
-      Deseo: asignaciones.Deseo,
-      Ahorro: asignaciones.Ahorro
-    };
-
-    const gastosSemanaActual = movimientos.filter(m => {
-        const { inicio, fin } = getFechasFiltro('semana');
+    const gastosPeriodoActual = movimientos.filter(m => {
+        const { inicio, fin } = getFechasFiltro(tipoSeguimiento);
         return m.fecha >= inicio && m.fecha <= fin && m.categoria !== 'Ingreso';
     }).reduce((acc, mov) => {
         acc[mov.categoria] = (acc[mov.categoria] || 0) + mov.monto;
         return acc;
     }, { Necesidad: 0, Deseo: 0, Ahorro: 0 });
 
-    // Gráfico de Presupuesto vs Gasto Semanal
+    const presupuestoPeriodo = {
+      Necesidad: asignaciones.Necesidad,
+      Deseo: asignaciones.Deseo,
+      Ahorro: asignaciones.Ahorro
+    };
+
+    // Gráfico de Presupuesto vs Gasto
     const ctxPresupuesto = document.getElementById("graficoPresupuesto").getContext("2d");
     if (chartPresupuesto) chartPresupuesto.destroy();
     chartPresupuesto = new Chart(ctxPresupuesto, {
@@ -250,14 +242,14 @@ document.addEventListener("DOMContentLoaded", () => {
       data: {
         labels: ['Necesidad', 'Deseo', 'Ahorro'],
         datasets: [{
-          label: 'Presupuesto Semanal',
-          data: [presupuestoSemanal.Necesidad, presupuestoSemanal.Deseo, presupuestoSemanal.Ahorro],
+          label: `Presupuesto ${tipoSeguimiento === 'semanal' ? 'Semanal' : 'Mensual'}`,
+          data: [presupuestoPeriodo.Necesidad, presupuestoPeriodo.Deseo, presupuestoPeriodo.Ahorro],
           backgroundColor: 'rgba(54, 162, 235, 0.5)',
           borderColor: 'rgba(54, 162, 235, 1)',
           borderWidth: 1
         }, {
-          label: 'Gasto Semanal',
-          data: [gastosSemanaActual.Necesidad, gastosSemanaActual.Deseo, gastosSemanaActual.Ahorro],
+          label: `Gasto ${tipoSeguimiento === 'semanal' ? 'Semanal' : 'Mensual'}`,
+          data: [gastosPeriodoActual.Necesidad, gastosPeriodoActual.Deseo, gastosPeriodoActual.Ahorro],
           backgroundColor: 'rgba(255, 99, 132, 0.5)',
           borderColor: 'rgba(255, 99, 132, 1)',
           borderWidth: 1
@@ -323,13 +315,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Event Listeners
   btnGuardarIngreso.addEventListener("click", () => {
-    ingresoSemanal = parseFloat(ingresoSemanalInput.value) || 0;
-    if (ingresoSemanal <= 0) {
-      alert("El ingreso semanal debe ser mayor que cero.");
+    ingresoBase = parseFloat(ingresoSemanalInput.value) || 0;
+    if (ingresoBase <= 0) {
+      alert(`El ingreso ${tipoSeguimiento === 'semanal' ? 'semanal' : 'mensual'} debe ser mayor que cero.`);
       return;
     }
-    localStorage.setItem("ingresoSemanal", ingresoSemanal);
-    ingresoSemanalMostrado.textContent = formatMoney(ingresoSemanal);
+    localStorage.setItem("ingresoBase", ingresoBase);
+    ingresoSemanalMostrado.textContent = formatMoney(ingresoBase);
 
     const sugerencias = calcularSugerencias();
     
@@ -353,9 +345,18 @@ document.addEventListener("DOMContentLoaded", () => {
     renderMovimientos();
   });
 
+  // MODIFICADO: Listener para el menú de seguimiento
+  tipoSeguimientoSelect.addEventListener('change', () => {
+      tipoSeguimiento = tipoSeguimientoSelect.value;
+      localStorage.setItem('tipoSeguimiento', tipoSeguimiento);
+      const ingresoLabel = document.querySelector('label[for="inputIngresoSemanal"]');
+      ingresoLabel.textContent = tipoSeguimiento === 'semanal' ? 'Ingreso semanal ($):' : 'Ingreso mensual ($):';
+      actualizarInterfazSegunSeguimiento();
+  });
+  
   ingresoSemanalInput.addEventListener("input", () => {
-    ingresoSemanal = parseFloat(ingresoSemanalInput.value) || 0;
-    ingresoSemanalMostrado.textContent = formatMoney(ingresoSemanal);
+    ingresoBase = parseFloat(ingresoSemanalInput.value) || 0;
+    ingresoSemanalMostrado.textContent = formatMoney(ingresoBase);
     calcularSugerencias();
     actualizarTotalAsignado();
   });
@@ -377,14 +378,16 @@ document.addEventListener("DOMContentLoaded", () => {
       alert("Complete todos los campos correctamente.");
       return;
     }
-
+    
+    // MODIFICADO: Mensaje de confirmación de saldo
     if (categoria !== 'Ingreso') {
-      const { inicio, fin } = getFechasFiltro('semana');
-      const gastadoSemana = movimientos.filter(m => m.categoria === categoria && m.fecha >= inicio && m.fecha <= fin).reduce((acc, cur) => acc + cur.monto, 0);
-      const saldoDisponible = asignaciones[categoria] - gastadoSemana;
+      const { inicio, fin } = getFechasFiltro(tipoSeguimiento);
+      const gastadoEnPeriodo = movimientos.filter(m => m.categoria === categoria && m.fecha >= inicio && m.fecha <= fin).reduce((acc, cur) => acc + cur.monto, 0);
+      const saldoDisponible = asignaciones[categoria] - gastadoEnPeriodo;
+      const periodoNombre = tipoSeguimiento === 'semanal' ? 'semanal' : 'mensual';
   
       if (monto > saldoDisponible) {
-        if (!confirm(`Este gasto (${formatMoney(monto)}) supera el saldo disponible semanal de ${categoria} (${formatMoney(saldoDisponible)}). ¿Quieres registrarlo igualmente?`)) {
+        if (!confirm(`Este gasto (${formatMoney(monto)}) supera el saldo disponible ${periodoNombre} de ${categoria} (${formatMoney(saldoDisponible)}). ¿Quieres registrarlo igualmente?`)) {
           return;
         }
       }
@@ -479,7 +482,8 @@ document.addEventListener("DOMContentLoaded", () => {
       const mesActual = fechaActual.toLocaleString('es-AR', { month: 'long', year: 'numeric' });
       
       historial[mesActual] = {
-        ingresoSemanal: ingresoSemanal,
+        ingresoBase: ingresoBase,
+        tipoSeguimiento: tipoSeguimiento,
         asignaciones: asignaciones,
         movimientos: movimientos
       };
@@ -510,9 +514,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const datos = historial[mes];
     if (!datos) return;
     
-    // Mostrar en una alerta o modal simple (para no complicar el HTML)
     let resumen = `--- Resumen de ${mes} ---\n\n`;
-    resumen += `Ingreso Semanal: ${formatMoney(datos.ingresoSemanal)}\n`;
+    resumen += `Ingreso ${datos.tipoSeguimiento === 'semanal' ? 'Semanal' : 'Mensual'}: ${formatMoney(datos.ingresoBase)}\n`;
     resumen += `Asignaciones:\n`;
     Object.keys(datos.asignaciones).forEach(cat => {
       resumen += `  - ${cat}: ${formatMoney(datos.asignaciones[cat])}\n`;
@@ -545,13 +548,48 @@ document.addEventListener("DOMContentLoaded", () => {
     a.click();
     URL.revokeObjectURL(url);
   });
+  
+  // NUEVA FUNCIÓN: Adapta la interfaz al tipo de seguimiento
+  function actualizarInterfazSegunSeguimiento() {
+    const ingresoLabel = document.querySelector('label[for="inputIngresoSemanal"]');
+    ingresoLabel.textContent = tipoSeguimiento === 'semanal' ? 'Ingreso semanal ($):' : 'Ingreso mensual ($):';
+    
+    if (tipoSeguimiento === 'mensual') {
+      filtroTiempo.value = 'mes';
+      filtroTiempo.disabled = true; // Deshabilitar el filtro de tiempo cuando es mensual
+    } else {
+      filtroTiempo.disabled = false;
+    }
+    
+    // Si el ingreso base actual es un ingreso semanal, lo ajustamos a un valor mensual
+    if (tipoSeguimiento === 'mensual' && localStorage.getItem('ingresoBaseSemanal') !== null) {
+      ingresoBase = parseFloat(localStorage.getItem('ingresoBaseSemanal')) * 4;
+      localStorage.setItem('ingresoBase', ingresoBase);
+      localStorage.removeItem('ingresoBaseSemanal');
+    } else if (tipoSeguimiento === 'semanal' && localStorage.getItem('ingresoBaseMensual') !== null) {
+      ingresoBase = parseFloat(localStorage.getItem('ingresoBaseMensual')) / 4;
+      localStorage.setItem('ingresoBase', ingresoBase);
+      localStorage.removeItem('ingresoBaseMensual');
+    }
+    
+    ingresoSemanalInput.value = ingresoBase;
+    ingresoSemanalMostrado.textContent = formatMoney(ingresoBase);
+    
+    const sugerencias = calcularSugerencias();
+    asignacionNecesidadInput.value = asignaciones.Necesidad;
+    asignacionDeseoInput.value = asignaciones.Deseo;
+    asignacionAhorroInput.value = asignaciones.Ahorro;
+
+    actualizarTotalAsignado();
+    renderMovimientos();
+  }
 
   // Inicialización
-  ingresoSemanalInput.value = ingresoSemanal;
-  ingresoSemanalMostrado.textContent = formatMoney(ingresoSemanal);
+  ingresoSemanalInput.value = ingresoBase;
+  ingresoSemanalMostrado.textContent = formatMoney(ingresoBase);
+  tipoSeguimientoSelect.value = tipoSeguimiento;
 
   const sugerencias = calcularSugerencias();
-
   if (!localStorage.getItem("asignaciones")) {
     asignacionNecesidadInput.value = sugerencias.Necesidad.toFixed(2);
     asignacionDeseoInput.value = sugerencias.Deseo.toFixed(2);
@@ -566,5 +604,5 @@ document.addEventListener("DOMContentLoaded", () => {
   actualizarSugerenciasSubcategorias();
   renderHistorialMeses();
   actualizarTotalAsignado();
-  renderMovimientos();
+  actualizarInterfazSegunSeguimiento();
 });

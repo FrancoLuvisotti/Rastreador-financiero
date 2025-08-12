@@ -18,6 +18,14 @@
     <h2 class="section-title">Configurar ingreso semanal y asignaciones</h2>
     <div class="flex-center" style="gap:1rem; flex-wrap: wrap; align-items:center;">
       <label for="inputIngresoSemanal">Ingreso semanal ($):</label>
+    <div style="display:flex; gap:1rem; align-items:center;">
+      <label for="tipoSeguimiento">Tipo de seguimiento:</label>
+      <select id="tipoSeguimiento" class="input-inline">
+        <option value="semanal">Semanal</option>
+        <option value="mensual">Mensual</option>
+      </select>
+    </div>
+
       <input type="number" id="inputIngresoSemanal" min="0" step="0.01" value="25000" class="input-inline" />
       <button id="btnGuardarIngreso">Guardar ingreso y asignaciones</button>
     </div>

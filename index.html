@@ -79,7 +79,14 @@
       </div>
       <div>
         <label for="inputSubcategoria">Subcategoría:</label>
-        <input type="text" id="inputSubcategoria" placeholder="Ej: Comida, Ropa, etc." list="subcategoriaSugerencias" required />
+        <div style="display:flex; gap:1rem; align-items:center;">
+    <label for="inputSubcategoria">Subcategoría:</label>
+    <input list="subcategoriaSugerencias" type="text" id="inputSubcategoria" required>
+    <datalist id="subcategoriaSugerencias"></datalist>
+    <button id="btnGestionarSubcategorias" type="button" class="btn-secundario">⚙️</button>
+</div>
+
+<input type="text" id="inputSubcategoria" placeholder="Ej: Comida, Ropa, etc." list="subcategoriaSugerencias" required />
         <datalist id="subcategoriaSugerencias"></datalist>
       </div>
       <div>

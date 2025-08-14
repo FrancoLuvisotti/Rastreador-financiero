@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rastreador Financiero</title>
+    <link rel="manifest" href="manifest.json">
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -195,5 +196,19 @@
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="script.js"></script>
+    <script>
+        if('serviceWorker' in Navigator){
+           window.addEventListener('load', ()=> {
+         navigator.serviceWorker.register('service-worker.js')
+     .then(registration => {
+        console.log('Service worker registrado con éxito', registration);
+     })
+     .catch(error =>{
+           console.log('Registro del Service worker fallido', error);
+     )};
+   )};
+  }
+     </script>
+
 </body>
 </html>

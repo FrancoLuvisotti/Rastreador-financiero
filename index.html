@@ -38,12 +38,12 @@
             <h3>Asignaciones</h3>
             <div class="asignacion-contenedor">
                 <div class="form-group">
-                    <label for="inputAsignacionNecesidad">Gasto Fijo (50%):</label>
+                    <label for="inputAsignacionNecesidad">Gastos Fijos (50%):</label>
                     <input type="number" id="inputAsignacionNecesidad" step="0.01" min="0">
                     <p class="sugerencia" id="sugerenciaNecesidad"></p>
                 </div>
                 <div class="form-group">
-                    <label for="inputAsignacionDeseo">Gasto Variado (30%):</label>
+                    <label for="inputAsignacionDeseo">Gastos Variados (30%):</label>
                     <input type="number" id="inputAsignacionDeseo" step="0.01" min="0">
                     <p class="sugerencia" id="sugerenciaDeseo"></p>
                 </div>
@@ -74,8 +74,8 @@
                     <label for="selectCategoria">Categoría:</label>
                     <select id="selectCategoria" required>
                         <option value="" disabled selected>Seleccione...</option>
-                        <option value="Necesidad">Necesidad</option>
-                        <option value="Deseo">Deseo</option>
+                        <option value="Gastos Fijos">Gastos Fijos</option>
+                        <option value="Gastos Variados">Gastos Variados</option>
                         <option value="Ahorro">Ahorro</option>
                         <option value="Ingreso">Ingreso</option>
                     </select>
@@ -134,8 +134,8 @@
                     <label for="filtroCategoria">Filtrar por categoría:</label>
                     <select id="filtroCategoria">
                         <option value="">Todas</option>
-                        <option value="Necesidad">Necesidad</option>
-                        <option value="Deseo">Deseo</option>
+                        <option value="Gastos Fijos">Gastos Fijos</option>
+                        <option value="Gastos Variados">Gastos Variados</option>
                         <option value="Ahorro">Ahorro</option>
                         <option value="Ingreso">Ingreso</option>
                     </select>
@@ -193,22 +193,21 @@
         </div>
         <button id="btnCerrarModal" class="btn-primario">Cerrar</button>
     </dialog>
-
+    
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('service-worker.js')
+            .then(registration => {
+              console.log('Service Worker registrado con éxito:', registration);
+            })
+            .catch(error => {
+              console.log('Registro del Service Worker fallido:', error);
+            });
+        });
+      }
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="script.js"></script>
-    <script>
-        if('serviceWorker' in Navigator){
-           window.addEventListener('load', ()=> {
-         navigator.serviceWorker.register('service-worker.js')
-     .then(registration => {
-        console.log('Service worker registrado con éxito', registration);
-     })
-     .catch(error =>{
-           console.log('Registro del Service worker fallido', error);
-     )};
-   )};
-  }
-     </script>
-
 </body>
 </html>

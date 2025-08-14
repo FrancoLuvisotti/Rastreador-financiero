@@ -42,11 +42,17 @@ document.addEventListener("DOMContentLoaded", () => {
   const ingresoLabel = document.querySelector('label[for="inputIngresoSemanal"]');
   ingresoLabel.textContent = tipoSeguimiento === 'semanal' ? 'Ingreso semanal ($):' : 'Ingreso mensual ($):';
   
-  let asignaciones = JSON.parse(localStorage.getItem("asignaciones")) || {
-    "Gastos Fijos": ingresoBase * 0.5,
-    "Gastos Variados": ingresoBase * 0.3,
-    "Ahorro": ingresoBase * 0.2
-  };
+  // CORRECCIÓN: Aquí nos aseguramos de que el objeto de asignaciones siempre tenga las claves correctas
+  let asignaciones = JSON.parse(localStorage.getItem("asignaciones")) || {};
+  if (!asignaciones["Gastos Fijos"] && !asignaciones["Gastos Variados"]) {
+    // Si no existen las nuevas claves, se crean con los valores por defecto
+    asignaciones = {
+      "Gastos Fijos": ingresoBase * 0.5,
+      "Gastos Variados": ingresoBase * 0.3,
+      "Ahorro": ingresoBase * 0.2
+    };
+  }
+
   let subcategoriasGuardadas = JSON.parse(localStorage.getItem('subcategorias')) || [];
   let historial = JSON.parse(localStorage.getItem('historial')) || {};
 
@@ -178,7 +184,7 @@ document.addEventListener("DOMContentLoaded", () => {
     actualizarResumen();
     actualizarGraficos();
   }
-
+  
   function actualizarSaldos() {
     saldosDiv.innerHTML = "";
 
@@ -189,6 +195,7 @@ document.addEventListener("DOMContentLoaded", () => {
       return acc;
     }, { "Gastos Fijos": 0, "Gastos Variados": 0, "Ahorro": 0 });
 
+    // CORRECCIÓN: Usamos Object.keys(asignaciones) para asegurarnos de que solo se usen las categorías existentes
     const saldoHTML = Object.keys(asignaciones).map(cat => {
       const restante = asignaciones[cat] - (totalesPeriodo[cat] || 0);
       const color = restante >= 0 ? "var(--verde)" : "var(--rojo)";
@@ -209,7 +216,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     resumenMensualBody.innerHTML = Object.keys(asignaciones).map(cat => {
       const totalGastado = totales[cat] || 0;
-      const presupuestoTotal = asignaciones[cat];
+      const presupuestoTotal = asignaciones[cat] || 0;
       const porcentaje = presupuestoTotal > 0 ? (totalGastado / presupuestoTotal) * 100 : 0;
       return `<tr>
         <td>${cat}</td>
@@ -230,9 +237,9 @@ document.addEventListener("DOMContentLoaded", () => {
     }, { "Gastos Fijos": 0, "Gastos Variados": 0, "Ahorro": 0 });
 
     const presupuestoPeriodo = {
-      "Gastos Fijos": asignaciones["Gastos Fijos"],
-      "Gastos Variados": asignaciones["Gastos Variados"],
-      "Ahorro": asignaciones.Ahorro
+      "Gastos Fijos": asignaciones["Gastos Fijos"] || 0,
+      "Gastos Variados": asignaciones["Gastos Variados"] || 0,
+      "Ahorro": asignaciones.Ahorro || 0
     };
 
     // Gráfico de Presupuesto vs Gasto
@@ -277,7 +284,6 @@ document.addEventListener("DOMContentLoaded", () => {
         meses[mes] += m.monto;
     });
     
-    // Incluir historial
     Object.keys(historial).forEach(mes => {
         const totalGastado = historial[mes].movimientos.filter(m => m.categoria !== 'Ingreso').reduce((sum, mov) => sum + mov.monto, 0);
         meses[mes] = totalGastado;

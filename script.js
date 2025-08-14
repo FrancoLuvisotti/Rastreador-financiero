@@ -14,31 +14,31 @@ document.addEventListener("DOMContentLoaded", () => {
   const barraAsignacion = document.getElementById("barraAsignacion");
 
   const formMovimiento = document.getElementById("formMovimiento");
-  const tablaMovimientosBody = document.querySelector("#tablaMovimientos tbody");
+  const tablaMovimientosBody = document.querySelector("#tablaMovimientos-body");
   const movimientosTotales = document.getElementById("movimientosTotales");
   const saldosDiv = document.getElementById("saldos");
-  const resumenMensualBody = document.querySelector("#resumenMensual tbody");
+  const resumenMensualBody = document.querySelector("#resumenMensual-body");
   const btnIniciarNuevoMes = document.getElementById("btnIniciarNuevoMes");
   const filtroCategoria = document.getElementById("filtroCategoria");
   const filtroTiempo = document.getElementById("filtroTiempo");
   const btnExportarCSV = document.getElementById("btnExportarCSV");
-  const inputSubcategoria = document.getElementById('inputSubcategoria');
-  const subcategoriaSugerencias = document.getElementById('subcategoriaSugerencias');
   const historialMesesDiv = document.getElementById('historialMeses');
   const tipoSeguimientoSelect = document.getElementById('tipoSeguimiento');
 
-  // NUEVO: Elementos DOM para la gestión de subcategorías
-  const btnGestionarSubcategorias = document.getElementById('btnGestionarSubcategorias');
+  // Elementos DOM para la gestión de subcategorías
+  const btnSeleccionarSubcategoria = document.getElementById('btnSeleccionarSubcategoria');
+  const inputSubcategoria = document.getElementById('inputSubcategoria');
   const modalSubcategorias = document.getElementById('modalSubcategorias');
   const listaSubcategorias = document.getElementById('listaSubcategorias');
   const btnCerrarModal = document.getElementById('btnCerrarModal');
+  const inputNuevaSubcategoria = document.getElementById('inputNuevaSubcategoria');
+  const btnAgregarSubcategoria = document.getElementById('btnAgregarSubcategoria');
 
   // Variables
   let movimientos = JSON.parse(localStorage.getItem("movimientos")) || [];
   let ingresoBase = parseFloat(localStorage.getItem("ingresoBase")) || 25000;
   let tipoSeguimiento = localStorage.getItem("tipoSeguimiento") || 'semanal';
 
-  // Ajusta el título del ingreso según el tipo de seguimiento
   const ingresoLabel = document.querySelector('label[for="inputIngresoSemanal"]');
   ingresoLabel.textContent = tipoSeguimiento === 'semanal' ? 'Ingreso semanal ($):' : 'Ingreso mensual ($):';
   
@@ -314,13 +314,13 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
   
-  // NUEVO: Función para actualizar la lista de subcategorías en la modal
+  // Función para renderizar la lista de subcategorías en la modal
   function renderListaSubcategorias() {
     listaSubcategorias.innerHTML = '';
     subcategoriasGuardadas.forEach(sub => {
       const li = document.createElement('li');
       li.innerHTML = `
-        <span>${sub}</span>
+        <button class="btn-seleccionar-subcategoria" data-subcategoria="${sub}">${sub}</button>
         <button class="btn-eliminar-subcategoria" data-subcategoria="${sub}">❌</button>
       `;
       listaSubcategorias.appendChild(li);
@@ -384,7 +384,7 @@ document.addEventListener("DOMContentLoaded", () => {
     e.preventDefault();
     const fecha = document.getElementById("inputFecha").value;
     const categoria = document.getElementById("selectCategoria").value;
-    const subcategoria = document.getElementById("inputSubcategoria").value.trim();
+    const subcategoria = inputSubcategoria.value.trim();
     const monto = parseFloat(document.getElementById("inputMonto").value);
 
     if (!fecha || !categoria || !subcategoria || !monto || monto <= 0) {
@@ -408,7 +408,6 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!subcategoriasGuardadas.includes(subcategoria)) {
       subcategoriasGuardadas.push(subcategoria);
       localStorage.setItem('subcategorias', JSON.stringify(subcategoriasGuardadas));
-      actualizarSugerenciasSubcategorias();
     }
 
     movimientos.push({
@@ -478,9 +477,9 @@ document.addEventListener("DOMContentLoaded", () => {
       renderMovimientos();
     }
   }
-  
-  // NUEVO: Listener para el botón de gestionar subcategorías
-  btnGestionarSubcategorias.addEventListener('click', () => {
+
+  // Listeners para el modal de subcategorías
+  btnSeleccionarSubcategoria.addEventListener('click', () => {
     renderListaSubcategorias();
     modalSubcategorias.showModal();
   });
@@ -488,29 +487,35 @@ document.addEventListener("DOMContentLoaded", () => {
   btnCerrarModal.addEventListener('click', () => {
     modalSubcategorias.close();
   });
-  
-  // NUEVO: Listener para eliminar subcategorías
+
   listaSubcategorias.addEventListener('click', (e) => {
-    if (e.target.classList.contains('btn-eliminar-subcategoria')) {
-      const subcategoria = e.target.getAttribute('data-subcategoria');
+    const target = e.target;
+    if (target.classList.contains('btn-seleccionar-subcategoria')) {
+      const subcategoria = target.getAttribute('data-subcategoria');
+      inputSubcategoria.value = subcategoria;
+      btnSeleccionarSubcategoria.textContent = subcategoria;
+      modalSubcategorias.close();
+    } else if (target.classList.contains('btn-eliminar-subcategoria')) {
+      const subcategoria = target.getAttribute('data-subcategoria');
       if (confirm(`¿Estás seguro de que quieres eliminar la subcategoría "${subcategoria}"?`)) {
         subcategoriasGuardadas = subcategoriasGuardadas.filter(sub => sub !== subcategoria);
         localStorage.setItem('subcategorias', JSON.stringify(subcategoriasGuardadas));
-        actualizarSugerenciasSubcategorias();
         renderListaSubcategorias();
       }
     }
   });
 
-
-  function actualizarSugerenciasSubcategorias() {
-    subcategoriaSugerencias.innerHTML = '';
-    subcategoriasGuardadas.forEach(sub => {
-      const option = document.createElement('option');
-      option.value = sub;
-      subcategoriaSugerencias.appendChild(option);
-    });
-  }
+  btnAgregarSubcategoria.addEventListener('click', () => {
+    const nuevaSubcategoria = inputNuevaSubcategoria.value.trim();
+    if (nuevaSubcategoria && !subcategoriasGuardadas.includes(nuevaSubcategoria)) {
+      subcategoriasGuardadas.push(nuevaSubcategoria);
+      localStorage.setItem('subcategorias', JSON.stringify(subcategoriasGuardadas));
+      renderListaSubcategorias();
+      inputNuevaSubcategoria.value = '';
+    } else {
+      alert('La subcategoría no puede estar vacía o ya existe.');
+    }
+  });
 
   btnIniciarNuevoMes.addEventListener("click", () => {
     if (confirm("¿Estás seguro de que quieres iniciar un nuevo mes? Esto archivará el mes actual y reiniciará todos los movimientos.")) {
@@ -635,7 +640,6 @@ document.addEventListener("DOMContentLoaded", () => {
     asignacionAhorroInput.value = asignaciones.Ahorro.toFixed(2);
   }
   
-  actualizarSugerenciasSubcategorias();
   renderHistorialMeses();
   actualizarTotalAsignado();
   actualizarInterfazSegunSeguimiento();

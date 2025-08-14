@@ -43,9 +43,9 @@ document.addEventListener("DOMContentLoaded", () => {
   ingresoLabel.textContent = tipoSeguimiento === 'semanal' ? 'Ingreso semanal ($):' : 'Ingreso mensual ($):';
   
   let asignaciones = JSON.parse(localStorage.getItem("asignaciones")) || {
-    Necesidad: ingresoBase * 0.5,
-    Deseo: ingresoBase * 0.3,
-    Ahorro: ingresoBase * 0.2
+    "Gastos Fijos": ingresoBase * 0.5,
+    "Gastos Variados": ingresoBase * 0.3,
+    "Ahorro": ingresoBase * 0.2
   };
   let subcategoriasGuardadas = JSON.parse(localStorage.getItem('subcategorias')) || [];
   let historial = JSON.parse(localStorage.getItem('historial')) || {};
@@ -69,13 +69,13 @@ document.addEventListener("DOMContentLoaded", () => {
   
   function calcularSugerencias() {
     const sugerencias = {
-      Necesidad: ingresoBase * 0.5,
-      Deseo: ingresoBase * 0.3,
-      Ahorro: ingresoBase * 0.2
+      "Gastos Fijos": ingresoBase * 0.5,
+      "Gastos Variados": ingresoBase * 0.3,
+      "Ahorro": ingresoBase * 0.2
     };
-    sugerenciaNecesidad.textContent = `Recomendado: ${formatMoney(sugerencias.Necesidad)}`;
-    sugerenciaDeseo.textContent = `Recomendado: ${formatMoney(sugerencias.Deseo)}`;
-    sugerenciaAhorro.textContent = `Recomendado: ${formatMoney(sugerencias.Ahorro)}`;
+    sugerenciaNecesidad.textContent = `Recomendado: ${formatMoney(sugerencias["Gastos Fijos"])}`;
+    sugerenciaDeseo.textContent = `Recomendado: ${formatMoney(sugerencias["Gastos Variados"])}`;
+    sugerenciaAhorro.textContent = `Recomendado: ${formatMoney(sugerencias["Ahorro"])}`;
     return sugerencias;
   }
 
@@ -104,17 +104,17 @@ document.addEventListener("DOMContentLoaded", () => {
     const ahorroPct = (parseFloat(asignacionAhorroInput.value || 0) / ingresoBase) * 100;
 
     barraAsignacion.innerHTML = `
-      <div class="barra-seccion barra-necesidad" style="width:${necesidadPct}%" title="Necesidad ${necesidadPct.toFixed(1)}%"></div>
-      <div class="barra-seccion barra-deseo" style="width:${deseoPct}%" title="Deseo ${deseoPct.toFixed(1)}%"></div>
+      <div class="barra-seccion barra-necesidad" style="width:${necesidadPct}%" title="Gastos Fijos ${necesidadPct.toFixed(1)}%"></div>
+      <div class="barra-seccion barra-deseo" style="width:${deseoPct}%" title="Gastos Variados ${deseoPct.toFixed(1)}%"></div>
       <div class="barra-seccion barra-ahorro" style="width:${ahorroPct}%" title="Ahorro ${ahorroPct.toFixed(1)}%"></div>
     `;
   }
 
   function guardarAsignaciones() {
     asignaciones = {
-      Necesidad: parseFloat(asignacionNecesidadInput.value) || 0,
-      Deseo: parseFloat(asignacionDeseoInput.value) || 0,
-      Ahorro: parseFloat(asignacionAhorroInput.value) || 0
+      "Gastos Fijos": parseFloat(asignacionNecesidadInput.value) || 0,
+      "Gastos Variados": parseFloat(asignacionDeseoInput.value) || 0,
+      "Ahorro": parseFloat(asignacionAhorroInput.value) || 0
     };
     localStorage.setItem("asignaciones", JSON.stringify(asignaciones));
   }
@@ -187,7 +187,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const totalesPeriodo = movimientosPeriodoActual.reduce((acc, mov) => {
       acc[mov.categoria] = (acc[mov.categoria] || 0) + mov.monto;
       return acc;
-    }, { Necesidad: 0, Deseo: 0, Ahorro: 0 });
+    }, { "Gastos Fijos": 0, "Gastos Variados": 0, "Ahorro": 0 });
 
     const saldoHTML = Object.keys(asignaciones).map(cat => {
       const restante = asignaciones[cat] - (totalesPeriodo[cat] || 0);
@@ -205,7 +205,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const totales = movimientos.filter(m => m.categoria !== 'Ingreso').reduce((acc, mov) => {
       acc[mov.categoria] = (acc[mov.categoria] || 0) + mov.monto;
       return acc;
-    }, { Necesidad: 0, Deseo: 0, Ahorro: 0 });
+    }, { "Gastos Fijos": 0, "Gastos Variados": 0, "Ahorro": 0 });
 
     resumenMensualBody.innerHTML = Object.keys(asignaciones).map(cat => {
       const totalGastado = totales[cat] || 0;
@@ -227,12 +227,12 @@ document.addEventListener("DOMContentLoaded", () => {
     }).reduce((acc, mov) => {
         acc[mov.categoria] = (acc[mov.categoria] || 0) + mov.monto;
         return acc;
-    }, { Necesidad: 0, Deseo: 0, Ahorro: 0 });
+    }, { "Gastos Fijos": 0, "Gastos Variados": 0, "Ahorro": 0 });
 
     const presupuestoPeriodo = {
-      Necesidad: asignaciones.Necesidad,
-      Deseo: asignaciones.Deseo,
-      Ahorro: asignaciones.Ahorro
+      "Gastos Fijos": asignaciones["Gastos Fijos"],
+      "Gastos Variados": asignaciones["Gastos Variados"],
+      "Ahorro": asignaciones.Ahorro
     };
 
     // Gráfico de Presupuesto vs Gasto
@@ -241,16 +241,16 @@ document.addEventListener("DOMContentLoaded", () => {
     chartPresupuesto = new Chart(ctxPresupuesto, {
       type: 'bar',
       data: {
-        labels: ['Necesidad', 'Deseo', 'Ahorro'],
+        labels: ['Gastos Fijos', 'Gastos Variados', 'Ahorro'],
         datasets: [{
           label: `Presupuesto ${tipoSeguimiento === 'semanal' ? 'Semanal' : 'Mensual'}`,
-          data: [presupuestoPeriodo.Necesidad, presupuestoPeriodo.Deseo, presupuestoPeriodo.Ahorro],
+          data: [presupuestoPeriodo["Gastos Fijos"], presupuestoPeriodo["Gastos Variados"], presupuestoPeriodo.Ahorro],
           backgroundColor: 'rgba(54, 162, 235, 0.5)',
           borderColor: 'rgba(54, 162, 235, 1)',
           borderWidth: 1
         }, {
           label: `Gasto ${tipoSeguimiento === 'semanal' ? 'Semanal' : 'Mensual'}`,
-          data: [gastosPeriodoActual.Necesidad, gastosPeriodoActual.Deseo, gastosPeriodoActual.Ahorro],
+          data: [gastosPeriodoActual["Gastos Fijos"], gastosPeriodoActual["Gastos Variados"], gastosPeriodoActual.Ahorro],
           backgroundColor: 'rgba(255, 99, 132, 0.5)',
           borderColor: 'rgba(255, 99, 132, 1)',
           borderWidth: 1
@@ -339,12 +339,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const sugerencias = calcularSugerencias();
     
-    const categorias = ["Necesidad", "Deseo", "Ahorro"];
+    const categorias = ["Gastos Fijos", "Gastos Variados", "Ahorro"];
     categorias.forEach(cat => {
         const input = {
-            Necesidad: asignacionNecesidadInput,
-            Deseo: asignacionDeseoInput,
-            Ahorro: asignacionAhorroInput
+            "Gastos Fijos": asignacionNecesidadInput,
+            "Gastos Variados": asignacionDeseoInput,
+            "Ahorro": asignacionAhorroInput
         }[cat];
         
         if (parseFloat(input.value).toFixed(2) !== sugerencias[cat].toFixed(2)) {
@@ -449,8 +449,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const nuevaFecha = prompt("Editar fecha (YYYY-MM-DD):", mov.fecha);
     if (!nuevaFecha) return;
-    const nuevaCategoria = prompt("Editar categoría (Necesidad, Deseo, Ahorro, Ingreso):", mov.categoria);
-    if (!["Necesidad", "Deseo", "Ahorro", "Ingreso"].includes(nuevaCategoria)) {
+    const nuevaCategoria = prompt("Editar categoría (Gastos Fijos, Gastos Variados, Ahorro, Ingreso):", mov.categoria);
+    if (!["Gastos Fijos", "Gastos Variados", "Ahorro", "Ingreso"].includes(nuevaCategoria)) {
       alert("Categoría inválida");
       return;
     }
@@ -615,9 +615,9 @@ document.addEventListener("DOMContentLoaded", () => {
     ingresoSemanalMostrado.textContent = formatMoney(ingresoBase);
     
     const sugerencias = calcularSugerencias();
-    asignacionNecesidadInput.value = asignaciones.Necesidad;
-    asignacionDeseoInput.value = asignaciones.Deseo;
-    asignacionAhorroInput.value = asignaciones.Ahorro;
+    asignacionNecesidadInput.value = asignaciones["Gastos Fijos"].toFixed(2);
+    asignacionDeseoInput.value = asignaciones["Gastos Variados"].toFixed(2);
+    asignacionAhorroInput.value = asignaciones.Ahorro.toFixed(2);
 
     actualizarTotalAsignado();
     renderMovimientos();
@@ -630,13 +630,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const sugerencias = calcularSugerencias();
   if (!localStorage.getItem("asignaciones")) {
-    asignacionNecesidadInput.value = sugerencias.Necesidad.toFixed(2);
-    asignacionDeseoInput.value = sugerencias.Deseo.toFixed(2);
+    asignacionNecesidadInput.value = sugerencias["Gastos Fijos"].toFixed(2);
+    asignacionDeseoInput.value = sugerencias["Gastos Variados"].toFixed(2);
     asignacionAhorroInput.value = sugerencias.Ahorro.toFixed(2);
     guardarAsignaciones();
   } else {
-    asignacionNecesidadInput.value = asignaciones.Necesidad.toFixed(2);
-    asignacionDeseoInput.value = asignaciones.Deseo.toFixed(2);
+    asignacionNecesidadInput.value = asignaciones["Gastos Fijos"].toFixed(2);
+    asignacionDeseoInput.value = asignaciones["Gastos Variados"].toFixed(2);
     asignacionAhorroInput.value = asignaciones.Ahorro.toFixed(2);
   }
   

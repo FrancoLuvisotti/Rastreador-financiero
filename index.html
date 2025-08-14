@@ -1,200 +1,199 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Rastreador Financiero Personal Mejorado</title>
-<link rel="stylesheet" href="styles.css" />
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rastreador Financiero</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
-<header>
-  <h1>Rastreador Financiero Personal</h1>
-</header>
+    <header>
+        <h1>Rastreador Financiero</h1>
+    </header>
 
-<main>
-  <section aria-label="Configuración ingreso semanal">
-    <h2 class="section-title">Configurar ingreso semanal y asignaciones</h2>
-    <div class="flex-center" style="gap:1rem; flex-wrap: wrap; align-items:center;">
-      <label for="inputIngresoSemanal">Ingreso semanal ($):</label>
-    <div style="display:flex; gap:1rem; align-items:center;">
-      <label for="tipoSeguimiento">Tipo de seguimiento:</label>
-      <select id="tipoSeguimiento" class="input-inline">
-        <option value="semanal">Semanal</option>
-        <option value="mensual">Mensual</option>
-      </select>
-    </div>
+    <main>
 
-      <input type="number" id="inputIngresoSemanal" min="0" step="0.01" value="25000" class="input-inline" />
-      <button id="btnGuardarIngreso">Guardar ingreso y asignaciones</button>
-    </div>
+        <section aria-label="Configuración de ingreso y asignaciones" class="seccion-principal">
+            <h2>Configuración</h2>
+            <form id="formIngreso" class="formulario">
+                <div class="form-group">
+                    <label for="inputIngresoSemanal">Ingreso semanal ($):</label>
+                    <input type="number" id="inputIngresoSemanal" step="0.01" min="0" required>
+                </div>
+                <div class="form-group">
+                    <label for="tipoSeguimiento">Tipo de seguimiento:</label>
+                    <select id="tipoSeguimiento" class="input-inline">
+                        <option value="semanal">Semanal</option>
+                        <option value="mensual">Mensual</option>
+                    </select>
+                </div>
+            </form>
 
-    <div id="asignacionCategorias" style="margin-top:1rem; display:flex; gap:1rem; flex-wrap:wrap;">
-      <div>
-        <label for="inputAsignacionNecesidad">Asignación Necesidad ($):</label><br />
-        <input type="number" id="inputAsignacionNecesidad" min="0" step="0.01" />
-        <small id="sugerenciaNecesidad" class="sugerencia"></small>
-        <small id="alertaNecesidad" class="alert-text" style="display:none;"></small>
-      </div>
-      <div>
-        <label for="inputAsignacionDeseo">Asignación Deseo ($):</label><br />
-        <input type="number" id="inputAsignacionDeseo" min="0" step="0.01" />
-        <small id="sugerenciaDeseo" class="sugerencia"></small>
-        <small id="alertaDeseo" class="alert-text" style="display:none;"></small>
-      </div>
-      <div>
-        <label for="inputAsignacionAhorro">Asignación Ahorro ($):</label><br />
-        <input type="number" id="inputAsignacionAhorro" min="0" step="0.01" />
-        <small id="sugerenciaAhorro" class="sugerencia"></small>
-        <small id="alertaAhorro" class="alert-text" style="display:none;"></small>
-      </div>
-    </div>
+            <div class="ingreso-actual">
+                <p>Ingreso actual: <span id="ingresoSemanalMostrado">$0.00</span></p>
+            </div>
 
-    <div id="barraAsignacion" aria-label="Barra visual asignación" style="margin-top: 1rem;">
-      </div>
+            <h3>Asignaciones</h3>
+            <div class="asignacion-contenedor">
+                <div class="form-group">
+                    <label for="inputAsignacionNecesidad">Necesidad (50%):</label>
+                    <input type="number" id="inputAsignacionNecesidad" step="0.01" min="0">
+                    <p class="sugerencia" id="sugerenciaNecesidad"></p>
+                </div>
+                <div class="form-group">
+                    <label for="inputAsignacionDeseo">Deseo (30%):</label>
+                    <input type="number" id="inputAsignacionDeseo" step="0.01" min="0">
+                    <p class="sugerencia" id="sugerenciaDeseo"></p>
+                </div>
+                <div class="form-group">
+                    <label for="inputAsignacionAhorro">Ahorro (20%):</label>
+                    <input type="number" id="inputAsignacionAhorro" step="0.01" min="0">
+                    <p class="sugerencia" id="sugerenciaAhorro"></p>
+                </div>
+            </div>
 
-    <small style="display:block; margin-top:0.25rem; color:#555;">
-      Total asignado: <span id="totalAsignado">0</span> / Ingreso semanal: <span id="ingresoSemanalMostrado">0</span>
-    </small>
-    <small id="errorAsignacion" style="color:#f44336; font-weight:bold; display:none;"></small>
-  </section>
+            <p>Total asignado: <span id="totalAsignado">$0.00</span></p>
+            <div id="barraAsignacion" class="barra-contenedor"></div>
+            <p id="errorAsignacion" class="mensaje-error"></p>
 
-  <section aria-label="Agregar movimiento">
-    <h2 class="section-title">Registrar ingreso/gasto diario</h2>
-    <form id="formMovimiento">
-      <div>
-        <label for="inputFecha">Fecha:</label>
-        <input type="date" id="inputFecha" required />
-      </div>
-      <div>
-        <label for="selectCategoria">Categoría:</label>
-        <select id="selectCategoria" required>
-          <option value="">Seleccione</option>
-          <option value="Necesidad">Necesidad</option>
-          <option value="Deseo">Deseo</option>
-          <option value="Ahorro">Ahorro</option>
-          <option value="Ingreso">Ingreso Adicional</option>
-        </select>
-      </div>
-      <div>
-        <div style="display:flex; gap:1rem; align-items:center;">
-    <label for="inputSubcategoria">Subcategoría:</label>
-    <input list="subcategoriaSugerencias" type="text" id="inputSubcategoria" required>
-    <datalist id="subcategoriaSugerencias"></datalist>
-    <button id="btnGestionarSubcategorias" type="button" class="btn-secundario">⚙️</button>
-</div>
+            <button id="btnGuardarIngreso" class="btn-primario">Guardar asignaciones</button>
+        </section>
+        
+        <hr>
 
-<input type="text" id="inputSubcategoria" placeholder="Ej: Comida, Ropa, etc." list="subcategoriaSugerencias" required />
-        <datalist id="subcategoriaSugerencias"></datalist>
-      </div>
-      <div>
-        <label for="inputMonto">Monto ($):</label>
-        <input type="number" id="inputMonto" min="0.01" step="0.01" required />
-      </div>
-      <div class="flex-center" style="align-self: end;">
-        <button type="submit">Agregar</button>
-      </div>
-    </form>
-  </section>
+        <section aria-label="Agregar nuevo movimiento" class="seccion-principal">
+            <h2>Agregar nuevo movimiento</h2>
+            <form id="formMovimiento" class="formulario">
+                <div class="form-group">
+                    <label for="inputFecha">Fecha:</label>
+                    <input type="date" id="inputFecha" required>
+                </div>
+                <div class="form-group">
+                    <label for="selectCategoria">Categoría:</label>
+                    <select id="selectCategoria" required>
+                        <option value="" disabled selected>Seleccione...</option>
+                        <option value="Necesidad">Necesidad</option>
+                        <option value="Deseo">Deseo</option>
+                        <option value="Ahorro">Ahorro</option>
+                        <option value="Ingreso">Ingreso</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="btnSeleccionarSubcategoria">Subcategoría:</label>
+                    <button id="btnSeleccionarSubcategoria" type="button" class="btn-secundario">Seleccionar...</button>
+                    <input type="hidden" id="inputSubcategoria" required>
+                </div>
+                <div class="form-group">
+                    <label for="inputMonto">Monto ($):</label>
+                    <input type="number" id="inputMonto" step="0.01" min="0" required>
+                </div>
+                <button type="submit" class="btn-primario">Registrar movimiento</button>
+            </form>
+        </section>
 
-  <section aria-label="Movimientos registrados">
-    <h2 class="section-title">Movimientos registrados</h2>
+        <hr>
 
-    <div style="margin-bottom: 0.5rem;">
-      <label for="filtroTiempo">Filtrar por:</label>
-      <select id="filtroTiempo" aria-label="Filtro de tiempo">
-        <option value="mes">Mes actual</option>
-        <option value="semana">Semana actual</option>
-      </select>
-      <label for="filtroCategoria">Filtrar por categoría:</label>
-      <select id="filtroCategoria" aria-label="Filtro categoría">
-        <option value="">Todas</option>
-        <option value="Necesidad">Necesidad</option>
-        <option value="Deseo">Deseo</option>
-        <option value="Ahorro">Ahorro</option>
-        <option value="Ingreso">Ingreso</option>
-      </select>
-      <button id="btnExportarCSV" style="margin-left: 1rem;">Exportar movimientos a Excel (CSV)</button>
-    </div>
+        <section aria-label="Resumen de gastos y saldos" class="seccion-principal">
+            <h2>Resumen</h2>
+            <div id="saldos" class="saldos-contenedor"></div>
 
-    <table id="tablaMovimientos" aria-live="polite" aria-describedby="movimientosTotales" role="grid">
-      <thead>
-        <tr>
-          <th scope="col">Fecha</th>
-          <th scope="col">Día</th>
-          <th scope="col">Semana</th>
-          <th scope="col">Categoría</th>
-          <th scope="col">Subcategoría</th>
-          <th scope="col">Monto ($)</th>
-          <th scope="col">Acciones</th>
-        </tr>
-      </thead>
-      <tbody>
-        </tbody>
-    </table>
-    <div id="movimientosTotales" style="margin-top:0.3rem; font-size:0.9rem;"></div>
-  </section>
+            <div class="graficos">
+                <div class="grafico-item">
+                    <h3>Presupuesto vs. Gasto</h3>
+                    <canvas id="graficoPresupuesto"></canvas>
+                </div>
+                <div class="grafico-item">
+                    <h3>Tendencia de gastos</h3>
+                    <canvas id="graficoTendencia"></canvas>
+                </div>
+            </div>
 
-  <section aria-label="Saldos">
-    <h2 class="section-title">Saldos por categoría</h2>
-    <div id="saldos" aria-live="polite"></div>
-  </section>
+            <h3>Resumen total</h3>
+            <table class="tabla-resumen">
+                <thead>
+                    <tr>
+                        <th>Categoría</th>
+                        <th>Presupuesto</th>
+                        <th>Gastado</th>
+                        <th>% Gastado</th>
+                    </tr>
+                </thead>
+                <tbody id="resumenMensual-body">
+                </tbody>
+            </table>
+        </section>
 
-  <section aria-label="Análisis y resumen mensual">
-    <h2 class="section-title">Análisis mensual</h2>
-    <div id="graficos" style="display:flex; flex-wrap:wrap; gap:1rem;">
-      <div>
-        <h3>Gasto vs. Presupuesto Semanal</h3>
-        <canvas id="graficoPresupuesto" aria-label="Gráfico de presupuesto vs gasto" role="img" style="max-width:400px;"></canvas>
-      </div>
-      <div>
-        <h3>Tendencia de Gasto Mensual</h3>
-        <canvas id="graficoTendencia" aria-label="Gráfico de tendencia de gasto mensual" role="img" style="max-width:400px;"></canvas>
-      </div>
-    </div>
+        <hr>
 
-    <div style="margin-top: 2rem;">
-      <h3>Resumen detallado</h3>
-      <table id="resumenMensual" aria-live="polite">
-        <thead>
-          <tr>
-            <th>Categoría</th>
-            <th>Presupuesto Mensual ($)</th>
-            <th>Total gastado ($)</th>
-            <th>% respecto presupuesto</th>
-          </tr>
-        </thead>
-        <tbody>
-          </tbody>
-      </table>
-    </div>
-  </section>
-  
-  <section aria-label="Historial de meses">
-    <h2 class="section-title">Historial de meses</h2>
-    <div id="historialMeses">
-      </div>
-  </section>
+        <section aria-label="Historial de movimientos" class="seccion-principal">
+            <h2>Historial de movimientos</h2>
+            <div class="controles-historial">
+                <div class="form-group">
+                    <label for="filtroCategoria">Filtrar por categoría:</label>
+                    <select id="filtroCategoria">
+                        <option value="">Todas</option>
+                        <option value="Necesidad">Necesidad</option>
+                        <option value="Deseo">Deseo</option>
+                        <option value="Ahorro">Ahorro</option>
+                        <option value="Ingreso">Ingreso</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="filtroTiempo">Filtrar por tiempo:</label>
+                    <select id="filtroTiempo">
+                        <option value="semana">Semana actual</option>
+                        <option value="mes">Mes actual</option>
+                    </select>
+                </div>
+            </div>
 
-  <section style="margin-top: 2rem;">
-    <button id="btnIniciarNuevoMes" style="background: var(--verde); width: 100%;">Iniciar Nuevo Mes</button>
-  </section>
-</main>
+            <p id="movimientosTotales">Movimientos mostrados: 0</p>
+            <div class="tabla-contenedor">
+                <table class="tabla-movimientos">
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Día</th>
+                            <th>Semana</th>
+                            <th>Categoría</th>
+                            <th>Subcategoría</th>
+                            <th>Monto ($)</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tablaMovimientos-body">
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="controles-adicionales">
+                <button id="btnExportarCSV" class="btn-secundario">Exportar a CSV</button>
+                <button id="btnIniciarNuevoMes" class="btn-primario">Iniciar nuevo mes</button>
+            </div>
+        </section>
+        
+        <hr>
 
-<footer>
-  &copy; 2025 Rastreador Financiero Personal
-</footer>
+        <section aria-label="Historial de meses" class="seccion-principal">
+            <h2>Historial de meses</h2>
+            <div id="historialMeses" class="historial-meses-contenedor"></div>
+        </section>
 
-<script src="script.js"></script>
+    </main>
+    
+    <dialog id="modalSubcategorias">
+        <h3 class="modal-titulo">Seleccionar Subcategoría</h3>
+        <p>Selecciona una subcategoría existente o agrega una nueva.</p>
+        <ul id="listaSubcategorias" class="lista-modal"></ul>
+        <div class="modal-footer">
+            <input type="text" id="inputNuevaSubcategoria" placeholder="Agregar nueva subcategoría">
+            <button id="btnAgregarSubcategoria" class="btn-secundario">Agregar</button>
+        </div>
+        <button id="btnCerrarModal" class="btn-primario">Cerrar</button>
+    </dialog>
 
-<dialog id="modalSubcategorias">
-    <h3 class="modal-titulo">Gestionar Subcategorías</h3>
-    <p>Aquí puedes ver y eliminar las subcategorías que has creado.</p>
-    <ul id="listaSubcategorias" class="lista-modal"></ul>
-    <button id="btnCerrarModal" class="btn-primario">Cerrar</button>
-</dialog>
-
-
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>

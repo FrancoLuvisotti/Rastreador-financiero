@@ -387,7 +387,7 @@ document.addEventListener("DOMContentLoaded", () => {
     } else {
       saldoTotal -= monto;
     }
-    localStorage.setItem("saldoTotal", saldoTotal.toFixed(2));
+    localStorage.setItem("saldoTotal", saldoTotal);
 
     renderMovimientos();
     formMovimiento.reset();
@@ -411,7 +411,7 @@ document.addEventListener("DOMContentLoaded", () => {
           } else {
             saldoTotal += movToDelete.monto;
           }
-          localStorage.setItem("saldoTotal", saldoTotal.toFixed(2));
+          localStorage.setItem("saldoTotal", saldoTotal);
         }
 
         movimientos = movimientos.filter(m => m.id !== id);
@@ -468,7 +468,7 @@ document.addEventListener("DOMContentLoaded", () => {
         monto: nuevoMonto
       };
       localStorage.setItem("movimientos", JSON.stringify(movimientos));
-      localStorage.setItem("saldoTotal", saldoTotal.toFixed(2));
+      localStorage.setItem("saldoTotal", saldoTotal);
       renderMovimientos();
     }
   }

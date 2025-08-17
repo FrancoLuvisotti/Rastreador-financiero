@@ -10,57 +10,48 @@
 <body>
 
     <header>
-        <h1>Rastreador Financiero</h1>
+        <h1>Rastreador Financiero Personal</h1>
     </header>
 
     <main>
 
-        <section aria-label="Configuración de ingreso y asignaciones" class="seccion-principal">
+        <section aria-label="Configuración de ingreso y asignación" class="seccion-principal">
             <h2>Configuración</h2>
             <form id="formIngreso" class="formulario">
                 <div class="form-group">
-                    <label for="inputIngresoSemanal">Ingreso semanal ($):</label>
-                    <input type="number" id="inputIngresoSemanal" step="0.01" min="0" required>
-                </div>
-                <div class="form-group">
-                    <label for="tipoSeguimiento">Tipo de seguimiento:</label>
-                    <select id="tipoSeguimiento" class="input-inline">
-                        <option value="semanal">Semanal</option>
-                        <option value="mensual">Mensual</option>
-                    </select>
+                    <label for="inputIngresoBase">Ingreso ($):</label>
+                    <input type="number" id="inputIngresoBase" step="0.01" min="0" required>
                 </div>
             </form>
-
             <div class="ingreso-actual">
-                <p>Ingreso actual: <span id="ingresoSemanalMostrado">$0.00</span></p>
+                <p>Tu ingreso: <span id="ingresoBaseMostrado">$0.00</span></p>
+                <p>Saldo total: <span id="saldoTotalMostrado">$0.00</span></p>
             </div>
+            
+            <h3>Regla 50/30/20</h3>
+            <div id="barraAsignacion" class="barra-asignacion"></div>
 
-            <h3>Asignaciones</h3>
-            <div class="asignacion-contenedor">
+            <form id="formAsignacion" class="formulario">
                 <div class="form-group">
-                    <label for="inputAsignacionNecesidad">Gastos Fijos (50%):</label>
-                    <input type="number" id="inputAsignacionNecesidad" step="0.01" min="0">
-                    <p class="sugerencia" id="sugerenciaNecesidad"></p>
+                    <label for="inputAsignacionNecesidad">Gastos Fijos (50%): <span id="sugerenciaNecesidad" class="sugerencia"></span></label>
+                    <input type="number" id="inputAsignacionNecesidad" step="0.01" required>
                 </div>
                 <div class="form-group">
-                    <label for="inputAsignacionDeseo">Gastos Variados (30%):</label>
-                    <input type="number" id="inputAsignacionDeseo" step="0.01" min="0">
-                    <p class="sugerencia" id="sugerenciaDeseo"></p>
+                    <label for="inputAsignacionDeseo">Gastos Variables (30%): <span id="sugerenciaDeseo" class="sugerencia"></span></label>
+                    <input type="number" id="inputAsignacionDeseo" step="0.01" required>
                 </div>
                 <div class="form-group">
-                    <label for="inputAsignacionAhorro">Ahorro (20%):</label>
-                    <input type="number" id="inputAsignacionAhorro" step="0.01" min="0">
-                    <p class="sugerencia" id="sugerenciaAhorro"></p>
+                    <label for="inputAsignacionAhorro">Ahorro (20%): <span id="sugerenciaAhorro" class="sugerencia"></span></label>
+                    <input type="number" id="inputAsignacionAhorro" step="0.01" required>
                 </div>
-            </div>
-
-            <p>Total asignado: <span id="totalAsignado">$0.00</span></p>
-            <div id="barraAsignacion" class="barra-contenedor"></div>
-            <p id="errorAsignacion" class="mensaje-error"></p>
-
-            <button id="btnGuardarIngreso" class="btn-primario">Guardar asignaciones</button>
+                <div class="total-asignado">
+                    Total asignado: <span id="totalAsignado">$0.00</span>
+                </div>
+                <p id="errorAsignacion" class="mensaje-error"></p>
+                <button id="btnGuardarAsignacion" class="btn-primario" type="submit">Guardar asignaciones</button>
+            </form>
         </section>
-        
+
         <hr>
 
         <section aria-label="Agregar nuevo movimiento" class="seccion-principal">
@@ -74,10 +65,10 @@
                     <label for="selectCategoria">Categoría:</label>
                     <select id="selectCategoria" required>
                         <option value="" disabled selected>Seleccione...</option>
-                        <option value="Gastos Fijos">Gastos Fijos</option>
-                        <option value="Gastos Variados">Gastos Variados</option>
-                        <option value="Ahorro">Ahorro</option>
                         <option value="Ingreso">Ingreso</option>
+                        <option value="Gastos Fijos">Gastos Fijos</option>
+                        <option value="Gastos Variables">Gastos Variables</option>
+                        <option value="Ahorro">Ahorro</option>
                     </select>
                 </div>
                 <div class="form-group">
@@ -98,19 +89,18 @@
         <section aria-label="Resumen de gastos y saldos" class="seccion-principal">
             <h2>Resumen</h2>
             <div id="saldos" class="saldos-contenedor"></div>
-
             <div class="graficos">
                 <div class="grafico-item">
-                    <h3>Presupuesto vs. Gasto</h3>
+                    <h3>Presupuesto vs. Gasto (Semanal/Mensual)</h3>
                     <canvas id="graficoPresupuesto"></canvas>
                 </div>
                 <div class="grafico-item">
-                    <h3>Tendencia de gastos</h3>
+                    <h3>Tendencia Mensual de Gastos</h3>
                     <canvas id="graficoTendencia"></canvas>
                 </div>
             </div>
 
-            <h3>Resumen total</h3>
+            <h3>Resumen total por categoría</h3>
             <table class="tabla-resumen">
                 <thead>
                     <tr>
@@ -134,21 +124,20 @@
                     <label for="filtroCategoria">Filtrar por categoría:</label>
                     <select id="filtroCategoria">
                         <option value="">Todas</option>
-                        <option value="Gastos Fijos">Gastos Fijos</option>
-                        <option value="Gastos Variados">Gastos Variados</option>
-                        <option value="Ahorro">Ahorro</option>
                         <option value="Ingreso">Ingreso</option>
+                        <option value="Gastos Fijos">Gastos Fijos</option>
+                        <option value="Gastos Variables">Gastos Variables</option>
+                        <option value="Ahorro">Ahorro</option>
                     </select>
                 </div>
                 <div class="form-group">
-                    <label for="filtroTiempo">Filtrar por tiempo:</label>
+                    <label for="filtroTiempo">Filtrar por periodo:</label>
                     <select id="filtroTiempo">
                         <option value="semana">Semana actual</option>
                         <option value="mes">Mes actual</option>
                     </select>
                 </div>
             </div>
-
             <p id="movimientosTotales">Movimientos mostrados: 0</p>
             <div class="tabla-contenedor">
                 <table class="tabla-movimientos">
@@ -167,32 +156,28 @@
                     </tbody>
                 </table>
             </div>
-            
+
             <div class="controles-adicionales">
                 <button id="btnExportarCSV" class="btn-secundario">Exportar a CSV</button>
+                <button id="btnLimpiarDatos" class="btn-primario">Limpiar todos los datos</button>
                 <button id="btnIniciarNuevoMes" class="btn-primario">Iniciar nuevo mes</button>
             </div>
+            
+            <div id="historialMeses" class="historial-meses"></div>
         </section>
         
-        <hr>
-
-        <section aria-label="Historial de meses" class="seccion-principal">
-            <h2>Historial de meses</h2>
-            <div id="historialMeses" class="historial-meses-contenedor"></div>
-        </section>
+        <dialog id="modalSubcategorias">
+            <h3 class="modal-titulo">Seleccionar Subcategoría</h3>
+            <p>Selecciona una subcategoría existente o agrega una nueva.</p>
+            <ul id="listaSubcategorias" class="lista-modal"></ul>
+            <div class="modal-footer">
+                <input type="text" id="inputNuevaSubcategoria" placeholder="Agregar nueva subcategoría">
+                <button id="btnAgregarSubcategoria" class="btn-secundario">Agregar</button>
+            </div>
+            <button id="btnCerrarModal" class="btn-primario">Cerrar</button>
+        </dialog>
 
     </main>
-    
-    <dialog id="modalSubcategorias">
-        <h3 class="modal-titulo">Seleccionar Subcategoría</h3>
-        <p>Selecciona una subcategoría existente o agrega una nueva.</p>
-        <ul id="listaSubcategorias" class="lista-modal"></ul>
-        <div class="modal-footer">
-            <input type="text" id="inputNuevaSubcategoria" placeholder="Agregar nueva subcategoría">
-            <button id="btnAgregarSubcategoria" class="btn-secundario">Agregar</button>
-        </div>
-        <button id="btnCerrarModal" class="btn-primario">Cerrar</button>
-    </dialog>
     
     <script>
       if ('serviceWorker' in navigator) {

@@ -1,7 +1,7 @@
 document.addEventListener("DOMContentLoaded", () => {
   // Elementos DOM
-  const ingresoSemanalInput = document.getElementById("inputIngresoSemanal");
-  const btnGuardarIngreso = document.getElementById("btnGuardarIngreso");
+  const ingresoBaseInput = document.getElementById("inputIngresoBase");
+  const btnGuardarAsignacion = document.getElementById("btnGuardarAsignacion");
   const asignacionNecesidadInput = document.getElementById("inputAsignacionNecesidad");
   const asignacionDeseoInput = document.getElementById("inputAsignacionDeseo");
   const asignacionAhorroInput = document.getElementById("inputAsignacionAhorro");
@@ -10,7 +10,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const sugerenciaAhorro = document.getElementById("sugerenciaAhorro");
   const totalAsignadoSpan = document.getElementById("totalAsignado");
   const errorAsignacion = document.getElementById("errorAsignacion");
-  const ingresoSemanalMostrado = document.getElementById("ingresoSemanalMostrado");
+  const ingresoBaseMostrado = document.getElementById("ingresoBaseMostrado");
+  const saldoTotalMostrado = document.getElementById("saldoTotalMostrado");
   const barraAsignacion = document.getElementById("barraAsignacion");
 
   const formMovimiento = document.getElementById("formMovimiento");
@@ -23,8 +24,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const filtroTiempo = document.getElementById("filtroTiempo");
   const btnExportarCSV = document.getElementById("btnExportarCSV");
   const historialMesesDiv = document.getElementById('historialMeses');
-  const tipoSeguimientoSelect = document.getElementById('tipoSeguimiento');
-
+  
   // Elementos DOM para la gestión de subcategorías
   const btnSeleccionarSubcategoria = document.getElementById('btnSeleccionarSubcategoria');
   const inputSubcategoria = document.getElementById('inputSubcategoria');
@@ -37,24 +37,10 @@ document.addEventListener("DOMContentLoaded", () => {
   // Variables
   let movimientos = JSON.parse(localStorage.getItem("movimientos")) || [];
   let ingresoBase = parseFloat(localStorage.getItem("ingresoBase")) || 25000;
-  let tipoSeguimiento = localStorage.getItem("tipoSeguimiento") || 'semanal';
-
-  const ingresoLabel = document.querySelector('label[for="inputIngresoSemanal"]');
-  ingresoLabel.textContent = tipoSeguimiento === 'semanal' ? 'Ingreso semanal ($):' : 'Ingreso mensual ($):';
-  
-  // CORRECCIÓN: Aquí nos aseguramos de que el objeto de asignaciones siempre tenga las claves correctas
   let asignaciones = JSON.parse(localStorage.getItem("asignaciones")) || {};
-  if (!asignaciones["Gastos Fijos"] && !asignaciones["Gastos Variados"]) {
-    // Si no existen las nuevas claves, se crean con los valores por defecto
-    asignaciones = {
-      "Gastos Fijos": ingresoBase * 0.5,
-      "Gastos Variados": ingresoBase * 0.3,
-      "Ahorro": ingresoBase * 0.2
-    };
-  }
-
   let subcategoriasGuardadas = JSON.parse(localStorage.getItem('subcategorias')) || [];
   let historial = JSON.parse(localStorage.getItem('historial')) || {};
+  let saldoTotal = parseFloat(localStorage.getItem("saldoTotal")) || 0;
 
   // Gráficos
   let chartPresupuesto = null;
@@ -76,11 +62,11 @@ document.addEventListener("DOMContentLoaded", () => {
   function calcularSugerencias() {
     const sugerencias = {
       "Gastos Fijos": ingresoBase * 0.5,
-      "Gastos Variados": ingresoBase * 0.3,
+      "Gastos Variables": ingresoBase * 0.3,
       "Ahorro": ingresoBase * 0.2
     };
     sugerenciaNecesidad.textContent = `Recomendado: ${formatMoney(sugerencias["Gastos Fijos"])}`;
-    sugerenciaDeseo.textContent = `Recomendado: ${formatMoney(sugerencias["Gastos Variados"])}`;
+    sugerenciaDeseo.textContent = `Recomendado: ${formatMoney(sugerencias["Gastos Variables"])}`;
     sugerenciaAhorro.textContent = `Recomendado: ${formatMoney(sugerencias["Ahorro"])}`;
     return sugerencias;
   }
@@ -93,13 +79,13 @@ document.addEventListener("DOMContentLoaded", () => {
     totalAsignadoSpan.textContent = formatMoney(totalAsignado);
 
     const isTotalValid = Math.abs(totalAsignado - ingresoBase) < 0.01;
-    btnGuardarIngreso.disabled = !isTotalValid;
+    btnGuardarAsignacion.disabled = !isTotalValid;
 
     if (totalAsignado > ingresoBase) {
-      errorAsignacion.textContent = `⚠ El total asignado supera el ingreso ${tipoSeguimiento === 'semanal' ? 'semanal' : 'mensual'}.`;
+      errorAsignacion.textContent = `⚠ El total asignado supera el ingreso.`;
       errorAsignacion.style.display = "block";
     } else if (totalAsignado < ingresoBase) {
-      errorAsignacion.textContent = `⚠ El total asignado es menor que el ingreso ${tipoSeguimiento === 'semanal' ? 'semanal' : 'mensual'}.`;
+      errorAsignacion.textContent = `⚠ El total asignado es menor que el ingreso.`;
       errorAsignacion.style.display = "block";
     } else {
       errorAsignacion.style.display = "none";
@@ -111,7 +97,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     barraAsignacion.innerHTML = `
       <div class="barra-seccion barra-necesidad" style="width:${necesidadPct}%" title="Gastos Fijos ${necesidadPct.toFixed(1)}%"></div>
-      <div class="barra-seccion barra-deseo" style="width:${deseoPct}%" title="Gastos Variados ${deseoPct.toFixed(1)}%"></div>
+      <div class="barra-seccion barra-deseo" style="width:${deseoPct}%" title="Gastos Variables ${deseoPct.toFixed(1)}%"></div>
       <div class="barra-seccion barra-ahorro" style="width:${ahorroPct}%" title="Ahorro ${ahorroPct.toFixed(1)}%"></div>
     `;
   }
@@ -119,7 +105,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function guardarAsignaciones() {
     asignaciones = {
       "Gastos Fijos": parseFloat(asignacionNecesidadInput.value) || 0,
-      "Gastos Variados": parseFloat(asignacionDeseoInput.value) || 0,
+      "Gastos Variables": parseFloat(asignacionDeseoInput.value) || 0,
       "Ahorro": parseFloat(asignacionAhorroInput.value) || 0
     };
     localStorage.setItem("asignaciones", JSON.stringify(asignaciones));
@@ -149,7 +135,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function renderMovimientos() {
     const filtroCat = filtroCategoria.value;
-    const filtroT = tipoSeguimiento;
+    const filtroT = filtroTiempo.value;
     const { inicio, fin } = getFechasFiltro(filtroT);
 
     tablaMovimientosBody.innerHTML = "";
@@ -180,22 +166,21 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     movimientosTotales.textContent = `Movimientos mostrados: ${movsFiltrados.length}`;
-    actualizarSaldos();
+    actualizarSaldosPeriodo();
     actualizarResumen();
     actualizarGraficos();
   }
   
-  function actualizarSaldos() {
+  function actualizarSaldosPeriodo() {
     saldosDiv.innerHTML = "";
 
-    const { inicio, fin } = getFechasFiltro(tipoSeguimiento);
+    const { inicio, fin } = getFechasFiltro(filtroTiempo.value);
     const movimientosPeriodoActual = movimientos.filter(m => m.fecha >= inicio && m.fecha <= fin && m.categoria !== 'Ingreso');
     const totalesPeriodo = movimientosPeriodoActual.reduce((acc, mov) => {
       acc[mov.categoria] = (acc[mov.categoria] || 0) + mov.monto;
       return acc;
-    }, { "Gastos Fijos": 0, "Gastos Variados": 0, "Ahorro": 0 });
+    }, { "Gastos Fijos": 0, "Gastos Variables": 0, "Ahorro": 0 });
 
-    // CORRECCIÓN: Usamos Object.keys(asignaciones) para asegurarnos de que solo se usen las categorías existentes
     const saldoHTML = Object.keys(asignaciones).map(cat => {
       const restante = asignaciones[cat] - (totalesPeriodo[cat] || 0);
       const color = restante >= 0 ? "var(--verde)" : "var(--rojo)";
@@ -204,15 +189,17 @@ document.addEventListener("DOMContentLoaded", () => {
       </div>`;
     }).join("");
     
-    const titulo = tipoSeguimiento === 'semanal' ? 'Saldo semanal' : 'Saldo mensual';
+    const titulo = filtroTiempo.value === 'semana' ? 'Saldo semanal' : 'Saldo mensual';
     saldosDiv.innerHTML = `<h3>${titulo}</h3>${saldoHTML}`;
+    
+    saldoTotalMostrado.textContent = formatMoney(saldoTotal);
   }
 
   function actualizarResumen() {
     const totales = movimientos.filter(m => m.categoria !== 'Ingreso').reduce((acc, mov) => {
       acc[mov.categoria] = (acc[mov.categoria] || 0) + mov.monto;
       return acc;
-    }, { "Gastos Fijos": 0, "Gastos Variados": 0, "Ahorro": 0 });
+    }, { "Gastos Fijos": 0, "Gastos Variables": 0, "Ahorro": 0 });
 
     resumenMensualBody.innerHTML = Object.keys(asignaciones).map(cat => {
       const totalGastado = totales[cat] || 0;
@@ -229,16 +216,16 @@ document.addEventListener("DOMContentLoaded", () => {
   
   function actualizarGraficos() {
     const gastosPeriodoActual = movimientos.filter(m => {
-        const { inicio, fin } = getFechasFiltro(tipoSeguimiento);
+        const { inicio, fin } = getFechasFiltro(filtroTiempo.value);
         return m.fecha >= inicio && m.fecha <= fin && m.categoria !== 'Ingreso';
     }).reduce((acc, mov) => {
         acc[mov.categoria] = (acc[mov.categoria] || 0) + mov.monto;
         return acc;
-    }, { "Gastos Fijos": 0, "Gastos Variados": 0, "Ahorro": 0 });
+    }, { "Gastos Fijos": 0, "Gastos Variables": 0, "Ahorro": 0 });
 
     const presupuestoPeriodo = {
       "Gastos Fijos": asignaciones["Gastos Fijos"] || 0,
-      "Gastos Variados": asignaciones["Gastos Variados"] || 0,
+      "Gastos Variables": asignaciones["Gastos Variables"] || 0,
       "Ahorro": asignaciones.Ahorro || 0
     };
 
@@ -248,16 +235,16 @@ document.addEventListener("DOMContentLoaded", () => {
     chartPresupuesto = new Chart(ctxPresupuesto, {
       type: 'bar',
       data: {
-        labels: ['Gastos Fijos', 'Gastos Variados', 'Ahorro'],
+        labels: ['Gastos Fijos', 'Gastos Variables', 'Ahorro'],
         datasets: [{
-          label: `Presupuesto ${tipoSeguimiento === 'semanal' ? 'Semanal' : 'Mensual'}`,
-          data: [presupuestoPeriodo["Gastos Fijos"], presupuestoPeriodo["Gastos Variados"], presupuestoPeriodo.Ahorro],
+          label: `Presupuesto ${filtroTiempo.value === 'semana' ? 'Semanal' : 'Mensual'}`,
+          data: [presupuestoPeriodo["Gastos Fijos"], presupuestoPeriodo["Gastos Variables"], presupuestoPeriodo.Ahorro],
           backgroundColor: 'rgba(54, 162, 235, 0.5)',
           borderColor: 'rgba(54, 162, 235, 1)',
           borderWidth: 1
         }, {
-          label: `Gasto ${tipoSeguimiento === 'semanal' ? 'Semanal' : 'Mensual'}`,
-          data: [gastosPeriodoActual["Gastos Fijos"], gastosPeriodoActual["Gastos Variados"], gastosPeriodoActual.Ahorro],
+          label: `Gasto ${filtroTiempo.value === 'semana' ? 'Semanal' : 'Mensual'}`,
+          data: [gastosPeriodoActual["Gastos Fijos"], gastosPeriodoActual["Gastos Variables"], gastosPeriodoActual.Ahorro],
           backgroundColor: 'rgba(255, 99, 132, 0.5)',
           borderColor: 'rgba(255, 99, 132, 1)',
           borderWidth: 1
@@ -278,7 +265,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const meses = {};
     const nombresMeses = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
     movimientos.filter(m => m.categoria !== 'Ingreso').forEach(m => {
-        const fecha = new Date(m.fecha);
+        const fecha = new Date(m.fecha + 'T00:00:00');
         const mes = `${nombresMeses[fecha.getMonth()]}-${fecha.getFullYear()}`;
         if (!meses[mes]) meses[mes] = 0;
         meses[mes] += m.monto;
@@ -334,52 +321,20 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // Event Listeners
-  btnGuardarIngreso.addEventListener("click", () => {
-    ingresoBase = parseFloat(ingresoSemanalInput.value) || 0;
-    if (ingresoBase <= 0) {
-      alert(`El ingreso ${tipoSeguimiento === 'semanal' ? 'semanal' : 'mensual'} debe ser mayor que cero.`);
-      return;
-    }
+  ingresoBaseInput.addEventListener("input", () => {
+    ingresoBase = parseFloat(ingresoBaseInput.value) || 0;
     localStorage.setItem("ingresoBase", ingresoBase);
-    ingresoSemanalMostrado.textContent = formatMoney(ingresoBase);
-
-    const sugerencias = calcularSugerencias();
-    
-    const categorias = ["Gastos Fijos", "Gastos Variados", "Ahorro"];
-    categorias.forEach(cat => {
-        const input = {
-            "Gastos Fijos": asignacionNecesidadInput,
-            "Gastos Variados": asignacionDeseoInput,
-            "Ahorro": asignacionAhorroInput
-        }[cat];
-        
-        if (parseFloat(input.value).toFixed(2) !== sugerencias[cat].toFixed(2)) {
-            if (!confirm(`Has puesto un valor diferente al recomendado para ${cat} (${formatMoney(input.value)} vs ${formatMoney(sugerencias[cat])}). ¿Seguro que quieres continuar?`)) {
-                input.value = sugerencias[cat].toFixed(2);
-            }
-        }
-    });
-
-    guardarAsignaciones();
-    actualizarTotalAsignado();
-    renderMovimientos();
-  });
-  
-  tipoSeguimientoSelect.addEventListener('change', () => {
-      tipoSeguimiento = tipoSeguimientoSelect.value;
-      localStorage.setItem('tipoSeguimiento', tipoSeguimiento);
-      const ingresoLabel = document.querySelector('label[for="inputIngresoSemanal"]');
-      ingresoLabel.textContent = tipoSeguimiento === 'semanal' ? 'Ingreso semanal ($):' : 'Ingreso mensual ($):';
-      actualizarInterfazSegunSeguimiento();
-  });
-  
-  ingresoSemanalInput.addEventListener("input", () => {
-    ingresoBase = parseFloat(ingresoSemanalInput.value) || 0;
-    ingresoSemanalMostrado.textContent = formatMoney(ingresoBase);
+    ingresoBaseMostrado.textContent = formatMoney(ingresoBase);
     calcularSugerencias();
     actualizarTotalAsignado();
   });
 
+  btnGuardarAsignacion.addEventListener("click", (e) => {
+    e.preventDefault();
+    guardarAsignaciones();
+    alert("Asignaciones guardadas correctamente.");
+  });
+  
   [asignacionNecesidadInput, asignacionDeseoInput, asignacionAhorroInput].forEach(input => {
     input.addEventListener("input", () => {
       actualizarTotalAsignado();
@@ -399,33 +354,41 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     
     if (categoria !== 'Ingreso') {
-      const { inicio, fin } = getFechasFiltro(tipoSeguimiento);
+      const { inicio, fin } = getFechasFiltro(filtroTiempo.value);
       const gastadoEnPeriodo = movimientos.filter(m => m.categoria === categoria && m.fecha >= inicio && m.fecha <= fin).reduce((acc, cur) => acc + cur.monto, 0);
       const saldoDisponible = asignaciones[categoria] - gastadoEnPeriodo;
-      const periodoNombre = tipoSeguimiento === 'semanal' ? 'semanal' : 'mensual';
   
       if (monto > saldoDisponible) {
-        if (!confirm(`Este gasto (${formatMoney(monto)}) supera el saldo disponible ${periodoNombre} de ${categoria} (${formatMoney(saldoDisponible)}). ¿Quieres registrarlo igualmente?`)) {
+        if (!confirm(`Este gasto (${formatMoney(monto)}) supera el saldo disponible para ${categoria} (${formatMoney(saldoDisponible)}). ¿Quieres registrarlo igualmente?`)) {
           return;
         }
       }
     }
 
     if (!subcategoriasGuardadas.includes(subcategoria)) {
-      subcategoriasGuardadas.push(subcategoria);
+      subcategoriasGuardadas.push(nuevaSubcategoria);
       localStorage.setItem('subcategorias', JSON.stringify(subcategoriasGuardadas));
     }
-
-    movimientos.push({
+    
+    const nuevoMovimiento = {
       id: generarUUID(),
       fecha,
       semana: calcularSemanaDelMes(fecha),
       categoria,
       subcategoria,
       monto
-    });
-
+    };
+    movimientos.push(nuevoMovimiento);
     localStorage.setItem("movimientos", JSON.stringify(movimientos));
+
+    // Actualiza el saldo total
+    if (categoria === 'Ingreso') {
+      saldoTotal += monto;
+    } else {
+      saldoTotal -= monto;
+    }
+    localStorage.setItem("saldoTotal", saldoTotal.toFixed(2));
+
     renderMovimientos();
     formMovimiento.reset();
   });
@@ -440,6 +403,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (target.classList.contains("btnBorrar")) {
       if (confirm("¿Seguro que quieres eliminar este movimiento?")) {
+        const movToDelete = movimientos.find(m => m.id === id);
+        if (movToDelete) {
+          // Revertir el cambio de saldo
+          if (movToDelete.categoria === 'Ingreso') {
+            saldoTotal -= movToDelete.monto;
+          } else {
+            saldoTotal += movToDelete.monto;
+          }
+          localStorage.setItem("saldoTotal", saldoTotal.toFixed(2));
+        }
+
         movimientos = movimientos.filter(m => m.id !== id);
         localStorage.setItem("movimientos", JSON.stringify(movimientos));
         renderMovimientos();
@@ -455,8 +429,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const nuevaFecha = prompt("Editar fecha (YYYY-MM-DD):", mov.fecha);
     if (!nuevaFecha) return;
-    const nuevaCategoria = prompt("Editar categoría (Gastos Fijos, Gastos Variados, Ahorro, Ingreso):", mov.categoria);
-    if (!["Gastos Fijos", "Gastos Variados", "Ahorro", "Ingreso"].includes(nuevaCategoria)) {
+    const nuevaCategoria = prompt("Editar categoría (Gastos Fijos, Gastos Variables, Ahorro, Ingreso):", mov.categoria);
+    if (!["Gastos Fijos", "Gastos Variables", "Ahorro", "Ingreso"].includes(nuevaCategoria)) {
       alert("Categoría inválida");
       return;
     }
@@ -467,6 +441,20 @@ document.addEventListener("DOMContentLoaded", () => {
     if (isNaN(nuevoMonto) || nuevoMonto <= 0) {
       alert("Monto inválido");
       return;
+    }
+
+    // Primero revertir el cambio de saldo del movimiento viejo
+    if (mov.categoria === 'Ingreso') {
+      saldoTotal -= mov.monto;
+    } else {
+      saldoTotal += mov.monto;
+    }
+
+    // Luego aplicar el nuevo cambio de saldo
+    if (nuevaCategoria === 'Ingreso') {
+      saldoTotal += nuevoMonto;
+    } else {
+      saldoTotal -= nuevoMonto;
     }
 
     const movIndex = movimientos.findIndex(m => m.id === id);
@@ -480,6 +468,7 @@ document.addEventListener("DOMContentLoaded", () => {
         monto: nuevoMonto
       };
       localStorage.setItem("movimientos", JSON.stringify(movimientos));
+      localStorage.setItem("saldoTotal", saldoTotal.toFixed(2));
       renderMovimientos();
     }
   }
@@ -524,13 +513,12 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   btnIniciarNuevoMes.addEventListener("click", () => {
-    if (confirm("¿Estás seguro de que quieres iniciar un nuevo mes? Esto archivará el mes actual y reiniciará todos los movimientos.")) {
+    if (confirm("¿Estás seguro de que quieres iniciar un nuevo mes? Esto archivará el mes actual y reiniciará los movimientos.")) {
       const fechaActual = new Date();
       const mesActual = fechaActual.toLocaleString('es-AR', { month: 'long', year: 'numeric' });
       
       historial[mesActual] = {
         ingresoBase: ingresoBase,
-        tipoSeguimiento: tipoSeguimiento,
         asignaciones: asignaciones,
         movimientos: movimientos
       };
@@ -562,7 +550,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!datos) return;
     
     let resumen = `--- Resumen de ${mes} ---\n\n`;
-    resumen += `Ingreso ${datos.tipoSeguimiento === 'semanal' ? 'Semanal' : 'Mensual'}: ${formatMoney(datos.ingresoBase)}\n`;
+    resumen += `Ingreso Base: ${formatMoney(datos.ingresoBase)}\n`;
     resumen += `Asignaciones:\n`;
     Object.keys(datos.asignaciones).forEach(cat => {
       resumen += `  - ${cat}: ${formatMoney(datos.asignaciones[cat])}\n`;
@@ -596,57 +584,46 @@ document.addEventListener("DOMContentLoaded", () => {
     URL.revokeObjectURL(url);
   });
   
-  function actualizarInterfazSegunSeguimiento() {
-    const ingresoLabel = document.querySelector('label[for="inputIngresoSemanal"]');
-    ingresoLabel.textContent = tipoSeguimiento === 'semanal' ? 'Ingreso semanal ($):' : 'Ingreso mensual ($):';
-    
-    if (tipoSeguimiento === 'mensual') {
-      filtroTiempo.value = 'mes';
-      filtroTiempo.disabled = true;
-    } else {
-      filtroTiempo.disabled = false;
+  btnLimpiarDatos.addEventListener("click", () => {
+    if (confirm("¿Estás seguro de que quieres limpiar todos los datos? Esto eliminará todos los movimientos, saldos y asignaciones.")) {
+      localStorage.clear();
+      movimientos = [];
+      ingresoBase = 0;
+      asignaciones = {};
+      saldoTotal = 0;
+      historial = {};
+      subcategoriasGuardadas = [];
+      ingresoBaseInput.value = "";
+      asignacionNecesidadInput.value = "";
+      asignacionDeseoInput.value = "";
+      asignacionAhorroInput.value = "";
+      renderMovimientos();
+      renderHistorialMeses();
+      actualizarTotalAsignado();
+      ingresoBaseMostrado.textContent = formatMoney(ingresoBase);
+      saldoTotalMostrado.textContent = formatMoney(saldoTotal);
+      alert("Todos los datos han sido limpiados.");
     }
-    
-    if (tipoSeguimiento === 'mensual' && localStorage.getItem('ingresoBaseSemanal') !== null) {
-      ingresoBase = parseFloat(localStorage.getItem('ingresoBaseSemanal')) * 4;
-      localStorage.setItem('ingresoBase', ingresoBase);
-      localStorage.removeItem('ingresoBaseSemanal');
-    } else if (tipoSeguimiento === 'semanal' && localStorage.getItem('ingresoBaseMensual') !== null) {
-      ingresoBase = parseFloat(localStorage.getItem('ingresoBaseMensual')) / 4;
-      localStorage.setItem('ingresoBase', ingresoBase);
-      localStorage.removeItem('ingresoBaseMensual');
-    }
-    
-    ingresoSemanalInput.value = ingresoBase;
-    ingresoSemanalMostrado.textContent = formatMoney(ingresoBase);
-    
-    const sugerencias = calcularSugerencias();
-    asignacionNecesidadInput.value = asignaciones["Gastos Fijos"].toFixed(2);
-    asignacionDeseoInput.value = asignaciones["Gastos Variados"].toFixed(2);
-    asignacionAhorroInput.value = asignaciones.Ahorro.toFixed(2);
-
-    actualizarTotalAsignado();
-    renderMovimientos();
-  }
+  });
 
   // Inicialización
-  ingresoSemanalInput.value = ingresoBase;
-  ingresoSemanalMostrado.textContent = formatMoney(ingresoBase);
-  tipoSeguimientoSelect.value = tipoSeguimiento;
-
+  ingresoBaseInput.value = ingresoBase;
+  ingresoBaseMostrado.textContent = formatMoney(ingresoBase);
+  saldoTotalMostrado.textContent = formatMoney(saldoTotal);
+  
   const sugerencias = calcularSugerencias();
   if (!localStorage.getItem("asignaciones")) {
     asignacionNecesidadInput.value = sugerencias["Gastos Fijos"].toFixed(2);
-    asignacionDeseoInput.value = sugerencias["Gastos Variados"].toFixed(2);
+    asignacionDeseoInput.value = sugerencias["Gastos Variables"].toFixed(2);
     asignacionAhorroInput.value = sugerencias.Ahorro.toFixed(2);
     guardarAsignaciones();
   } else {
     asignacionNecesidadInput.value = asignaciones["Gastos Fijos"].toFixed(2);
-    asignacionDeseoInput.value = asignaciones["Gastos Variados"].toFixed(2);
+    asignacionDeseoInput.value = asignaciones["Gastos Variables"].toFixed(2);
     asignacionAhorroInput.value = asignaciones.Ahorro.toFixed(2);
   }
   
   renderHistorialMeses();
   actualizarTotalAsignado();
-  actualizarInterfazSegunSeguimiento();
+  renderMovimientos();
 });

@@ -139,7 +139,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const { inicio, fin } = getFechasFiltro(filtroT);
 
     tablaMovimientosBody.innerHTML = "";
-    let movsFiltrados = movimientos.filter(m => m.fecha >= inicio && m.fecha <= fin);
+    let movsFiltrados = movimientos.slice().reverse().filter(m => m.fecha >= inicio && m.fecha <= fin);
 
     if (filtroCat) {
       movsFiltrados = movsFiltrados.filter(m => m.categoria === filtroCat);
@@ -366,7 +366,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     if (!subcategoriasGuardadas.includes(subcategoria)) {
-      subcategoriasGuardadas.push(nuevaSubcategoria);
+      subcategoriasGuardadas.push(subcategoria);
       localStorage.setItem('subcategorias', JSON.stringify(subcategoriasGuardadas));
     }
     
